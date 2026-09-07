@@ -8,7 +8,7 @@ import { detectPackageManager } from '../utils/pkgManager.js'
 
 export async function runPrompts(): Promise<ProjectOptions> {
   console.log()
-  p.intro(pc.bgCyan(pc.black(' Create Capacitor App ')))
+  p.intro(pc.bgCyan(pc.black(' CapKit — Create Capacitor App ')))
 
   const results = await p.group(
     {

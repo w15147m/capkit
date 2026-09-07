@@ -1,12 +1,32 @@
 {
-  "name": "my-capacitor-app",
-  "private": true,
-  "version": "0.0.0",
+  "name": "create-capkit",
+  "version": "0.1.0",
+  "description": "Interactive CLI to scaffold Capacitor mobile apps with React, Tailwind CSS v4, Konsta UI, and Android/iOS support",
   "type": "module",
+  "bin": {
+    "create-capkit": "./bin/create-capkit.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/w15147m/capkit.git"
+  },
+  "homepage": "https://github.com/w15147m/capkit#readme",
+  "keywords": [
+    "capacitor",
+    "cli",
+    "scaffold",
+    "starter",
+    "react",
+    "tailwind",
+    "konsta",
+    "mobile",
+    "android",
+    "ios"
+  ],
   "scripts": {
+    "create": "tsx --tsconfig cli.tsconfig.json src/index.ts",
     "dev": "vite",
     "build": "vite build",
-    "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {
