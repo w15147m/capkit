@@ -352,7 +352,7 @@ export default function TabBar({
 }${isTs ? ": TabBarProps" : ""}) {
   return (
     <nav
-      className={\`fixed bottom-0 left-0 right-0 z-40 border-t backdrop-blur-md transition-colors pb-[calc(0.5rem+env(safe-area-inset-bottom,0px))] pt-2 px-2 \${
+      className={\`fixed bottom-0 left-0 right-0 z-30 border-t backdrop-blur-md transition-colors pb-[calc(0.5rem+env(safe-area-inset-bottom,0px))] pt-2 px-2 \${
         darkMode ? 'bg-slate-950/90 border-slate-800/80 text-slate-400' : 'bg-white/90 border-slate-200/80 text-slate-500'
       }\`}
     >
@@ -565,7 +565,7 @@ export default function AlertDialog({
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       {/* Backdrop */}
       <div className="fixed inset-0 bg-black/60 backdrop-blur-xs" onClick={onCancel} />
 
@@ -631,7 +631,7 @@ export default function BottomSheet({
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end">
+    <div className="fixed inset-0 z-[100] flex items-end">
       {/* Backdrop */}
       <div className="fixed inset-0 bg-black/60 backdrop-blur-xs" onClick={onClose} />
 
@@ -1601,7 +1601,7 @@ export default function TabBar({
   onTabChange,
 }${isTs ? ": TabBarProps" : ""}) {
   return (
-    <Tabbar className="bottom-0 fixed left-0 right-0 z-40">
+    <Tabbar className="bottom-0 fixed left-0 right-0 z-30">
       {tabs.map((tab) => {
         const isActive = tab.id === activeTab
         return (
@@ -1768,6 +1768,7 @@ export default function AlertDialog({
       onBackdropClick={onCancel}
       title={title}
       content={content}
+      className="z-[100]"
       buttons={
         <>
           <DialogButton onClick={onCancel}>{cancelText}</DialogButton>
@@ -1804,12 +1805,12 @@ export default function BottomSheet({
     <Sheet
       opened={opened}
       onBackdropClick={onClose}
-      className={\`rounded-t-3xl pb-6 \${darkMode ? 'bg-slate-900 text-slate-100' : 'bg-white text-slate-900'}\`}
+      className={\`rounded-t-3xl pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))] z-[100] shadow-2xl \${darkMode ? 'bg-slate-900 text-slate-100' : 'bg-white text-slate-900'}\`}
     >
       <div className="p-4">
         {title && <BlockTitle className="text-center font-bold text-base mb-2">{title}</BlockTitle>}
         <Block>{children}</Block>
-        <div className="mt-4 px-4">
+        <div className="mt-4 px-4 pb-2">
           <Button rounded onClick={onClose}>
             Close
           </Button>

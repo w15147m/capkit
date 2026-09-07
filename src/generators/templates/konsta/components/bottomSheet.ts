@@ -21,12 +21,12 @@ export default function BottomSheet({
     <Sheet
       opened={opened}
       onBackdropClick={onClose}
-      className={\`rounded-t-3xl pb-6 \${darkMode ? 'bg-slate-900 text-slate-100' : 'bg-white text-slate-900'}\`}
+      className={\`rounded-t-3xl pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))] z-[100] shadow-2xl \${darkMode ? 'bg-slate-900 text-slate-100' : 'bg-white text-slate-900'}\`}
     >
       <div className="p-4">
         {title && <BlockTitle className="text-center font-bold text-base mb-2">{title}</BlockTitle>}
         <Block>{children}</Block>
-        <div className="mt-4 px-4">
+        <div className="mt-4 px-4 pb-2">
           <Button rounded onClick={onClose}>
             Close
           </Button>

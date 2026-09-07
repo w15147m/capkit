@@ -27,6 +27,7 @@ export default function AlertDialog({
       onBackdropClick={onCancel}
       title={title}
       content={content}
+      className="z-[100]"
       buttons={
         <>
           <DialogButton onClick={onCancel}>{cancelText}</DialogButton>

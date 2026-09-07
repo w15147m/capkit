@@ -23,7 +23,7 @@ export default function TabBar({
 }${isTs ? ': TabBarProps' : ''}) {
   return (
     <nav
-      className={\`fixed bottom-0 left-0 right-0 z-40 border-t backdrop-blur-md transition-colors pb-[calc(0.5rem+env(safe-area-inset-bottom,0px))] pt-2 px-2 \${
+      className={\`fixed bottom-0 left-0 right-0 z-30 border-t backdrop-blur-md transition-colors pb-[calc(0.5rem+env(safe-area-inset-bottom,0px))] pt-2 px-2 \${
         darkMode ? 'bg-slate-950/90 border-slate-800/80 text-slate-400' : 'bg-white/90 border-slate-200/80 text-slate-500'
       }\`}
     >

@@ -19,7 +19,7 @@ export default function BottomSheet({
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end">
+    <div className="fixed inset-0 z-[100] flex items-end">
       {/* Backdrop */}
       <div className="fixed inset-0 bg-black/60 backdrop-blur-xs" onClick={onClose} />
 

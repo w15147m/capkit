@@ -21,7 +21,7 @@ export default function TabBar({
   onTabChange,
 }${isTs ? ': TabBarProps' : ''}) {
   return (
-    <Tabbar className="bottom-0 fixed left-0 right-0 z-40">
+    <Tabbar className="bottom-0 fixed left-0 right-0 z-30">
       {tabs.map((tab) => {
         const isActive = tab.id === activeTab
         return (
