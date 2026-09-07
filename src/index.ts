@@ -5,7 +5,8 @@ import { runPrompts } from './prompts/index.js'
 import { generateProject } from './generators/project.js'
 
 async function main() {
-  const options = await runPrompts()
+  const targetDirArg = process.argv.slice(2)[0]
+  const options = await runPrompts(targetDirArg)
 
   const spinner = p.spinner()
 
@@ -26,11 +27,12 @@ async function main() {
     installSpinner.stop('Dependencies installed!')
   }
 
-  const relativeDir = path.relative(process.cwd(), options.targetDir)
+  const isCurrentDir = options.targetDir === process.cwd()
+  const relativeDir = isCurrentDir ? '' : path.relative(process.cwd(), options.targetDir)
 
   p.note(
     [
-      pc.cyan(`cd ${relativeDir}`),
+      relativeDir ? pc.cyan(`cd ${relativeDir}`) : '',
       options.install ? '' : pc.cyan(`${options.packageManager} install`),
       pc.cyan('npm run dev -- --host'),
       '',

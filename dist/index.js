@@ -52,26 +52,42 @@ async function installDependencies(targetDir, packageManager) {
 }
 
 // src/prompts/index.ts
-async function runPrompts() {
+async function runPrompts(targetDirArg) {
   console.log();
   p.intro(pc.bgCyan(pc.black(" CapKit \u2014 Create Capacitor App ")));
+  const isCurrentDir = targetDirArg === ".";
+  let targetDir = isCurrentDir ? process.cwd() : targetDirArg ? path2.resolve(process.cwd(), targetDirArg) : "";
+  let initialProjectName = isCurrentDir ? formatPackageName(path2.basename(process.cwd())) || "my-capacitor-app" : targetDirArg ? formatPackageName(targetDirArg) : "";
   const results = await p.group(
     {
-      projectName: () => p.text({
-        message: "Project name:",
-        placeholder: "my-capacitor-app",
-        defaultValue: "my-capacitor-app",
-        validate(value) {
-          if (!value) return "Project name is required";
-          if (!/^[a-z0-9-~][a-z0-9-._~]*$/.test(value))
-            return "Invalid package name. Use lowercase, numbers, and hyphens";
+      projectName: () => {
+        if (targetDirArg) {
+          return Promise.resolve(initialProjectName);
         }
-      }),
+        return p.text({
+          message: "Project name:",
+          placeholder: "my-capacitor-app",
+          defaultValue: "my-capacitor-app",
+          validate(value) {
+            if (!value) return "Project name is required";
+            if (value.trim() === ".") return void 0;
+            if (!/^[a-z0-9-~][a-z0-9-._~]*$/.test(value))
+              return 'Invalid package name. Use lowercase, numbers, and hyphens (or "." for current directory)';
+          }
+        });
+      },
       overwrite: ({ results: results2 }) => {
-        const targetDir2 = path2.resolve(process.cwd(), results2.projectName);
-        if (!isDirectoryEmpty(targetDir2)) {
+        const rawName2 = String(results2.projectName).trim();
+        if (rawName2 === "." || isCurrentDir) {
+          targetDir = process.cwd();
+          initialProjectName = formatPackageName(path2.basename(process.cwd())) || "my-capacitor-app";
+        } else {
+          targetDir = path2.resolve(process.cwd(), rawName2);
+          initialProjectName = formatPackageName(rawName2);
+        }
+        if (!isDirectoryEmpty(targetDir)) {
           return p.confirm({
-            message: `Directory "${results2.projectName}" is not empty. Overwrite?`,
+            message: targetDir === process.cwd() ? "Current directory is not empty. Continue and write files?" : `Directory "${rawName2}" is not empty. Overwrite?`,
             initialValue: false
           });
         }
@@ -132,11 +148,17 @@ async function runPrompts() {
       }
     }
   );
-  const projectName = String(results.projectName);
-  const targetDir = path2.resolve(process.cwd(), projectName);
+  if (results.overwrite === false) {
+    p.cancel("Operation cancelled.");
+    process.exit(0);
+  }
+  const rawName = String(results.projectName).trim();
+  const isDot = rawName === "." || isCurrentDir;
+  const finalTargetDir = isDot ? process.cwd() : path2.resolve(process.cwd(), rawName);
+  const finalProjectName = isDot ? formatPackageName(path2.basename(process.cwd())) || "my-capacitor-app" : formatPackageName(rawName);
   return {
-    projectName: formatPackageName(projectName),
-    targetDir,
+    projectName: finalProjectName,
+    targetDir: finalTargetDir,
     framework: "react",
     language: results.language ?? "ts",
     tailwind: Boolean(results.tailwind),
@@ -672,7 +694,8 @@ async function generateProject(options) {
 
 // src/index.ts
 async function main() {
-  const options = await runPrompts();
+  const targetDirArg = process.argv.slice(2)[0];
+  const options = await runPrompts(targetDirArg);
   const spinner2 = p2.spinner();
   spinner2.start("Scaffolding project files\u2026");
   try {
@@ -688,10 +711,11 @@ async function main() {
     installSpinner.start(`Installing dependencies with ${options.packageManager}\u2026`);
     installSpinner.stop("Dependencies installed!");
   }
-  const relativeDir = path6.relative(process.cwd(), options.targetDir);
+  const isCurrentDir = options.targetDir === process.cwd();
+  const relativeDir = isCurrentDir ? "" : path6.relative(process.cwd(), options.targetDir);
   p2.note(
     [
-      pc2.cyan(`cd ${relativeDir}`),
+      relativeDir ? pc2.cyan(`cd ${relativeDir}`) : "",
       options.install ? "" : pc2.cyan(`${options.packageManager} install`),
       pc2.cyan("npm run dev -- --host"),
       "",

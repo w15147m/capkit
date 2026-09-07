@@ -6,29 +6,57 @@ import type { ProjectOptions } from '../types/index.js'
 import { formatPackageName, isDirectoryEmpty } from '../utils/filesystem.js'
 import { detectPackageManager } from '../utils/pkgManager.js'
 
-export async function runPrompts(): Promise<ProjectOptions> {
+export async function runPrompts(targetDirArg?: string): Promise<ProjectOptions> {
   console.log()
   p.intro(pc.bgCyan(pc.black(' CapKit — Create Capacitor App ')))
 
+  const isCurrentDir = targetDirArg === '.'
+  let targetDir = isCurrentDir
+    ? process.cwd()
+    : targetDirArg
+    ? path.resolve(process.cwd(), targetDirArg)
+    : ''
+  let initialProjectName = isCurrentDir
+    ? formatPackageName(path.basename(process.cwd())) || 'my-capacitor-app'
+    : targetDirArg
+    ? formatPackageName(targetDirArg)
+    : ''
+
   const results = await p.group(
     {
-      projectName: () =>
-        p.text({
+      projectName: () => {
+        if (targetDirArg) {
+          return Promise.resolve(initialProjectName)
+        }
+        return p.text({
           message: 'Project name:',
           placeholder: 'my-capacitor-app',
           defaultValue: 'my-capacitor-app',
           validate(value) {
             if (!value) return 'Project name is required'
+            if (value.trim() === '.') return undefined
             if (!/^[a-z0-9-~][a-z0-9-._~]*$/.test(value))
-              return 'Invalid package name. Use lowercase, numbers, and hyphens'
+              return 'Invalid package name. Use lowercase, numbers, and hyphens (or "." for current directory)'
           },
-        }),
+        })
+      },
 
       overwrite: ({ results }) => {
-        const targetDir = path.resolve(process.cwd(), results.projectName as string)
+        const rawName = String(results.projectName).trim()
+        if (rawName === '.' || isCurrentDir) {
+          targetDir = process.cwd()
+          initialProjectName = formatPackageName(path.basename(process.cwd())) || 'my-capacitor-app'
+        } else {
+          targetDir = path.resolve(process.cwd(), rawName)
+          initialProjectName = formatPackageName(rawName)
+        }
+
         if (!isDirectoryEmpty(targetDir)) {
           return p.confirm({
-            message: `Directory "${results.projectName}" is not empty. Overwrite?`,
+            message:
+              targetDir === process.cwd()
+                ? 'Current directory is not empty. Continue and write files?'
+                : `Directory "${rawName}" is not empty. Overwrite?`,
             initialValue: false,
           })
         }
@@ -103,12 +131,21 @@ export async function runPrompts(): Promise<ProjectOptions> {
     }
   )
 
-  const projectName = String(results.projectName)
-  const targetDir = path.resolve(process.cwd(), projectName)
+  if (results.overwrite === false) {
+    p.cancel('Operation cancelled.')
+    process.exit(0)
+  }
+
+  const rawName = String(results.projectName).trim()
+  const isDot = rawName === '.' || isCurrentDir
+  const finalTargetDir = isDot ? process.cwd() : path.resolve(process.cwd(), rawName)
+  const finalProjectName = isDot
+    ? formatPackageName(path.basename(process.cwd())) || 'my-capacitor-app'
+    : formatPackageName(rawName)
 
   return {
-    projectName: formatPackageName(projectName),
-    targetDir,
+    projectName: finalProjectName,
+    targetDir: finalTargetDir,
     framework: 'react',
     language: (results.language as Language) ?? 'ts',
     tailwind: Boolean(results.tailwind),
