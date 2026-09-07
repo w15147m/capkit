@@ -171,6 +171,7 @@ async function runPrompts(targetDirArg) {
 
 // src/generators/project.ts
 import path5 from "pathe";
+import { execa as execa2 } from "execa";
 
 // src/generators/packageJson.ts
 function generatePackageJson(options) {
@@ -684,11 +685,22 @@ async function generateProject(options) {
   await writeJson(path5.join(targetDir, "package.json"), packageJson);
   await generateProjectFiles(targetDir, options);
   if (options.android) {
+    await ensureDir(path5.join(targetDir, "dist"));
+    await writeFile(
+      path5.join(targetDir, "dist", "index.html"),
+      "<!doctype html><html><body></body></html>"
+    );
     await generateCapacitorConfig(targetDir, options);
-    await generateAndroidGradleConfig(targetDir);
   }
   if (options.install) {
     await installDependencies(targetDir, options.packageManager);
+    if (options.android) {
+      try {
+        await execa2("npx", ["cap", "add", "android"], { cwd: targetDir, stdio: "ignore" });
+        await generateAndroidGradleConfig(targetDir);
+      } catch (err) {
+      }
+    }
   }
 }
 
@@ -717,10 +729,11 @@ async function main() {
     [
       relativeDir ? pc2.cyan(`cd ${relativeDir}`) : "",
       options.install ? "" : pc2.cyan(`${options.packageManager} install`),
+      !options.install && options.android ? pc2.cyan("npx cap add android") : "",
       pc2.cyan("npm run dev -- --host"),
       "",
       options.android ? [
-        pc2.dim("# Then on a new terminal:"),
+        pc2.dim("# On a separate terminal:"),
         pc2.cyan("adb reverse tcp:5173 tcp:5173"),
         pc2.cyan("npx cap run android")
       ].join("\n") : ""

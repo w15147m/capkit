@@ -34,11 +34,12 @@ async function main() {
     [
       relativeDir ? pc.cyan(`cd ${relativeDir}`) : '',
       options.install ? '' : pc.cyan(`${options.packageManager} install`),
+      !options.install && options.android ? pc.cyan('npx cap add android') : '',
       pc.cyan('npm run dev -- --host'),
       '',
       options.android
         ? [
-            pc.dim('# Then on a new terminal:'),
+            pc.dim('# On a separate terminal:'),
             pc.cyan('adb reverse tcp:5173 tcp:5173'),
             pc.cyan('npx cap run android'),
           ].join('\n')
