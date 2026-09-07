@@ -371,4 +371,89 @@ dist-ssr
 .DS_Store
 `
   await writeFile(path.join(targetDir, '.gitignore'), gitignore)
+
+  // 8. README.md
+  const readmeContent = `# ${options.projectName}
+
+Scaffolded with **[CapKit](https://github.com/w15147m/capkit)** — Interactive Capacitor starter kit.
+
+## 🚀 Tech Stack
+
+- **Framework**: React 19 (${options.language.toUpperCase()})
+- **Build Tool**: Vite
+${options.tailwind ? '- **Styling**: Tailwind CSS v4\n' : ''}${options.konsta ? '- **Mobile UI Components**: Konsta UI (iOS & Material design)\n' : ''}${options.android ? '- **Native Runtime**: Capacitor 8 (Android)\n' : ''}
+
+---
+
+## 🛠️ Getting Started (Development Server)
+
+### 1. Install Dependencies
+
+\`\`\`bash
+${options.packageManager} install
+\`\`\`
+
+### 2. Start the Vite Dev Server
+
+\`\`\`bash
+npm run dev -- --host
+\`\`\`
+
+> **Note**: The \`--host\` flag exposes Vite to your local network on \`http://localhost:5173\`.
+
+---
+
+${options.android ? `## 📱 Running on Android with Live Reload
+
+CapKit is pre-configured with **instant live reload (HMR)** on physical devices and emulators.
+
+### Step 1: Connect your Phone
+1. Enable **Developer Options** and **USB Debugging** on your Android device.
+2. Connect your phone to your computer via USB.
+3. Verify your device is detected:
+   \`\`\`bash
+   adb devices
+   \`\`\`
+
+### Step 2: Forward Ports via ADB Reverse
+Reverse the Vite dev server port so the phone can access \`http://localhost:5173\` directly:
+\`\`\`bash
+adb reverse tcp:5173 tcp:5173
+\`\`\`
+
+### Step 3: Run the App on Android
+In a separate terminal (while \`npm run dev -- --host\` is running):
+\`\`\`bash
+npx cap run android
+\`\`\`
+Or open the native Android project in Android Studio:
+\`\`\`bash
+npx cap open android
+\`\`\`
+
+---
+
+## ⚙️ Capacitor & Android Configuration
+
+- **Live Reload**: \`capacitor.config.json\` is configured to load \`http://localhost:5173\` during development. Any code changes will instantly update on your phone screen.
+- **Java 21 Requirement**: Capacitor 8 Android builds require Java 21 JDK. \`android/gradle.properties\` is configured with \`org.gradle.java.home=/usr/lib/jvm/java-21-openjdk-amd64\`.
+
+---
+
+## 📦 Production Build
+
+When you are ready to build a standalone offline release APK:
+1. In \`capacitor.config.json\`, remove the \`server\` configuration object.
+2. Run \`npm run build\` to produce the web bundle into \`dist/\`.
+3. Sync assets to native project:
+   \`\`\`bash
+   npx cap sync
+   \`\`\`
+4. Build APK in Android Studio or via Gradle:
+   \`\`\`bash
+   cd android && ./gradlew assembleRelease
+   \`\`\`
+` : ''}
+`
+  await writeFile(path.join(targetDir, 'README.md'), readmeContent)
 }

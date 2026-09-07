@@ -1,5 +1,4 @@
 import path from 'pathe'
-import { execa } from 'execa'
 import type { ProjectOptions } from '../types/index.js'
 import { ensureDir, writeJson } from '../utils/filesystem.js'
 import { generatePackageJson } from './packageJson.js'
@@ -26,14 +25,7 @@ export async function generateProject(options: ProjectOptions): Promise<void> {
     await generateAndroidGradleConfig(targetDir)
   }
 
-  // 5. Initialize Git repository
-  try {
-    await execa('git', ['init'], { cwd: targetDir, stdio: 'ignore' })
-  } catch {
-    // Git init is optional
-  }
-
-  // 6. Install dependencies if requested
+  // 5. Install dependencies if requested
   if (options.install) {
     await installDependencies(targetDir, options.packageManager)
   }
