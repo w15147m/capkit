@@ -2,7 +2,7 @@ export function getMUIHomeViewTemplate(isTs: boolean): string {
   const tsType = isTs ? ': { onOpenSheet: () => void; onShowToast: (msg: string) => void }' : ''
   return `import React from 'react'
 import { Card, CardHeader, CardContent, CardActions, Typography, Button, Box } from '@mui/material'
-import Badge from '../components/badge'
+import Badge from '../../components/badge'
 
 export default function HomeView({ onOpenSheet, onShowToast }${tsType}) {
   return (

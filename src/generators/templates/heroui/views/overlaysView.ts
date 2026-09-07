@@ -2,8 +2,8 @@ export function getHeroUIOverlaysViewTemplate(isTs: boolean): string {
   const tsType = isTs ? ': { onShowAlert: () => void; onShowToast: (msg: string, color?: any) => void; onOpenSheet: () => void }' : ''
   return `import React, { useState } from 'react'
 import { Card, CardHeader, CardBody, Button } from '@heroui/react'
-import LoadingSpinner from '../components/loadingSpinner'
-import Skeleton from '../components/skeleton'
+import LoadingSpinner from '../../components/loadingSpinner'
+import Skeleton from '../../components/skeleton'
 
 export default function OverlaysView({ onShowAlert, onShowToast, onOpenSheet }${tsType}) {
   const [showSkeleton, setShowSkeleton] = useState(false)

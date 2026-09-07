@@ -2,8 +2,8 @@ export function getMUIOverlaysViewTemplate(isTs: boolean): string {
   const tsType = isTs ? ': { onShowAlert: () => void; onShowToast: (msg: string, severity?: any) => void; onOpenSheet: () => void }' : ''
   return `import React, { useState } from 'react'
 import { Card, CardHeader, CardContent, Button, Box } from '@mui/material'
-import LoadingSpinner from '../components/loadingSpinner'
-import Skeleton from '../components/skeleton'
+import LoadingSpinner from '../../components/loadingSpinner'
+import Skeleton from '../../components/skeleton'
 
 export default function OverlaysView({ onShowAlert, onShowToast, onOpenSheet }${tsType}) {
   const [showSkeleton, setShowSkeleton] = useState(false)

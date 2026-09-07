@@ -2,8 +2,8 @@ export function getIonicOverlaysViewTemplate(isTs: boolean): string {
   const tsType = isTs ? ': { onShowAlert: () => void; onShowToast: (msg: string, color?: string) => void; onOpenSheet: () => void }' : ''
   return `import React, { useState } from 'react'
 import { IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonButton } from '@ionic/react'
-import LoadingSpinner from '../components/loadingSpinner'
-import Skeleton from '../components/skeleton'
+import LoadingSpinner from '../../components/loadingSpinner'
+import Skeleton from '../../components/skeleton'
 
 export default function OverlaysView({ onShowAlert, onShowToast, onOpenSheet }${tsType}) {
   const [showSkeleton, setShowSkeleton] = useState(false)

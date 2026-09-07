@@ -1,8 +1,8 @@
 export function getDaisyOverlaysViewTemplate(isTs: boolean): string {
   const tsType = isTs ? ': { onShowAlert: () => void; onShowToast: (msg: string, type?: any) => void; onOpenSheet: () => void }' : ''
   return `import React, { useState } from 'react'
-import LoadingSpinner from '../components/loadingSpinner'
-import Skeleton from '../components/skeleton'
+import LoadingSpinner from '../../components/loadingSpinner'
+import Skeleton from '../../components/skeleton'
 
 export default function OverlaysView({ onShowAlert, onShowToast, onOpenSheet }${tsType}) {
   const [showSkeleton, setShowSkeleton] = useState(false)

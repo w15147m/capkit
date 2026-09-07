@@ -2,7 +2,7 @@ export function getIonicHomeViewTemplate(isTs: boolean): string {
   const tsType = isTs ? ': { onOpenSheet: () => void; onShowToast: (msg: string) => void }' : ''
   return `import React from 'react'
 import { IonCard, IonCardHeader, IonCardTitle, IonCardSubtitle, IonCardContent, IonButton } from '@ionic/react'
-import Badge from '../components/badge'
+import Badge from '../../components/badge'
 
 export default function HomeView({ onOpenSheet, onShowToast }${tsType}) {
   return (

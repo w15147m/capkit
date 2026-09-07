@@ -2821,7 +2821,7 @@ export default function Badge({ children, variant = 'primary' }${tsType}) {
 function getDaisyHomeViewTemplate(isTs) {
   const tsType = isTs ? ": { onOpenSheet: () => void; onShowToast: (msg: string) => void }" : "";
   return `import React from 'react'
-import Badge from '../components/badge'
+import Badge from '../../components/badge'
 
 export default function HomeView({ onOpenSheet, onShowToast }${tsType}) {
   return (
@@ -2850,9 +2850,9 @@ export default function HomeView({ onOpenSheet, onShowToast }${tsType}) {
 // src/generators/templates/daisy/views/controlsView.ts
 function getDaisyControlsViewTemplate(isTs) {
   return `import React, { useState } from 'react'
-import SegmentedControl from '../components/segmentedControl'
-import ToggleSwitch from '../components/toggleSwitch'
-import Badge from '../components/badge'
+import SegmentedControl from '../../components/segmentedControl'
+import ToggleSwitch from '../../components/toggleSwitch'
+import Badge from '../../components/badge'
 
 export default function ControlsView() {
   const [segment, setSegment] = useState('daily')
@@ -2896,8 +2896,8 @@ export default function ControlsView() {
 function getDaisyOverlaysViewTemplate(isTs) {
   const tsType = isTs ? ": { onShowAlert: () => void; onShowToast: (msg: string, type?: any) => void; onOpenSheet: () => void }" : "";
   return `import React, { useState } from 'react'
-import LoadingSpinner from '../components/loadingSpinner'
-import Skeleton from '../components/skeleton'
+import LoadingSpinner from '../../components/loadingSpinner'
+import Skeleton from '../../components/skeleton'
 
 export default function OverlaysView({ onShowAlert, onShowToast, onOpenSheet }${tsType}) {
   const [showSkeleton, setShowSkeleton] = useState(false)
@@ -3381,7 +3381,7 @@ function getIonicHomeViewTemplate(isTs) {
   const tsType = isTs ? ": { onOpenSheet: () => void; onShowToast: (msg: string) => void }" : "";
   return `import React from 'react'
 import { IonCard, IonCardHeader, IonCardTitle, IonCardSubtitle, IonCardContent, IonButton } from '@ionic/react'
-import Badge from '../components/badge'
+import Badge from '../../components/badge'
 
 export default function HomeView({ onOpenSheet, onShowToast }${tsType}) {
   return (
@@ -3412,9 +3412,9 @@ export default function HomeView({ onOpenSheet, onShowToast }${tsType}) {
 function getIonicControlsViewTemplate(isTs) {
   return `import React, { useState } from 'react'
 import { IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonList } from '@ionic/react'
-import SegmentedControl from '../components/segmentedControl'
-import ToggleSwitch from '../components/toggleSwitch'
-import Badge from '../components/badge'
+import SegmentedControl from '../../components/segmentedControl'
+import ToggleSwitch from '../../components/toggleSwitch'
+import Badge from '../../components/badge'
 
 export default function ControlsView() {
   const [segment, setSegment] = useState('daily')
@@ -3460,8 +3460,8 @@ function getIonicOverlaysViewTemplate(isTs) {
   const tsType = isTs ? ": { onShowAlert: () => void; onShowToast: (msg: string, color?: string) => void; onOpenSheet: () => void }" : "";
   return `import React, { useState } from 'react'
 import { IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonButton } from '@ionic/react'
-import LoadingSpinner from '../components/loadingSpinner'
-import Skeleton from '../components/skeleton'
+import LoadingSpinner from '../../components/loadingSpinner'
+import Skeleton from '../../components/skeleton'
 
 export default function OverlaysView({ onShowAlert, onShowToast, onOpenSheet }${tsType}) {
   const [showSkeleton, setShowSkeleton] = useState(false)
@@ -3971,7 +3971,7 @@ function getHeroUIHomeViewTemplate(isTs) {
   const tsType = isTs ? ": { onOpenSheet: () => void; onShowToast: (msg: string) => void }" : "";
   return `import React from 'react'
 import { Card, CardHeader, CardBody, CardFooter, Button } from '@heroui/react'
-import Badge from '../components/badge'
+import Badge from '../../components/badge'
 
 export default function HomeView({ onOpenSheet, onShowToast }${tsType}) {
   return (
@@ -3999,9 +3999,9 @@ export default function HomeView({ onOpenSheet, onShowToast }${tsType}) {
 function getHeroUIControlsViewTemplate(isTs) {
   return `import React, { useState } from 'react'
 import { Card, CardHeader, CardBody } from '@heroui/react'
-import SegmentedControl from '../components/segmentedControl'
-import ToggleSwitch from '../components/toggleSwitch'
-import Badge from '../components/badge'
+import SegmentedControl from '../../components/segmentedControl'
+import ToggleSwitch from '../../components/toggleSwitch'
+import Badge from '../../components/badge'
 
 export default function ControlsView() {
   const [segment, setSegment] = useState('daily')
@@ -4041,8 +4041,8 @@ function getHeroUIOverlaysViewTemplate(isTs) {
   const tsType = isTs ? ": { onShowAlert: () => void; onShowToast: (msg: string, color?: any) => void; onOpenSheet: () => void }" : "";
   return `import React, { useState } from 'react'
 import { Card, CardHeader, CardBody, Button } from '@heroui/react'
-import LoadingSpinner from '../components/loadingSpinner'
-import Skeleton from '../components/skeleton'
+import LoadingSpinner from '../../components/loadingSpinner'
+import Skeleton from '../../components/skeleton'
 
 export default function OverlaysView({ onShowAlert, onShowToast, onOpenSheet }${tsType}) {
   const [showSkeleton, setShowSkeleton] = useState(false)
@@ -4516,7 +4516,7 @@ function getMUIHomeViewTemplate(isTs) {
   const tsType = isTs ? ": { onOpenSheet: () => void; onShowToast: (msg: string) => void }" : "";
   return `import React from 'react'
 import { Card, CardHeader, CardContent, CardActions, Typography, Button, Box } from '@mui/material'
-import Badge from '../components/badge'
+import Badge from '../../components/badge'
 
 export default function HomeView({ onOpenSheet, onShowToast }${tsType}) {
   return (
@@ -4547,9 +4547,9 @@ export default function HomeView({ onOpenSheet, onShowToast }${tsType}) {
 function getMUIControlsViewTemplate(isTs) {
   return `import React, { useState } from 'react'
 import { Card, CardHeader, CardContent, Box, Divider } from '@mui/material'
-import SegmentedControl from '../components/segmentedControl'
-import ToggleSwitch from '../components/toggleSwitch'
-import Badge from '../components/badge'
+import SegmentedControl from '../../components/segmentedControl'
+import ToggleSwitch from '../../components/toggleSwitch'
+import Badge from '../../components/badge'
 
 export default function ControlsView() {
   const [segment, setSegment] = useState('daily')
@@ -4590,8 +4590,8 @@ function getMUIOverlaysViewTemplate(isTs) {
   const tsType = isTs ? ": { onShowAlert: () => void; onShowToast: (msg: string, severity?: any) => void; onOpenSheet: () => void }" : "";
   return `import React, { useState } from 'react'
 import { Card, CardHeader, CardContent, Button, Box } from '@mui/material'
-import LoadingSpinner from '../components/loadingSpinner'
-import Skeleton from '../components/skeleton'
+import LoadingSpinner from '../../components/loadingSpinner'
+import Skeleton from '../../components/skeleton'
 
 export default function OverlaysView({ onShowAlert, onShowToast, onOpenSheet }${tsType}) {
   const [showSkeleton, setShowSkeleton] = useState(false)
@@ -5005,7 +5005,7 @@ function getFramework7HomeViewTemplate(isTs) {
   const tsType = isTs ? ": { onOpenSheet: () => void; onShowToast: (msg: string) => void }" : "";
   return `import React from 'react'
 import { Card, CardHeader, CardContent, CardFooter, Button, Block } from 'framework7-react'
-import Badge from '../components/badge'
+import Badge from '../../components/badge'
 
 export default function HomeView({ onOpenSheet, onShowToast }${tsType}) {
   return (
@@ -5033,9 +5033,9 @@ export default function HomeView({ onOpenSheet, onShowToast }${tsType}) {
 function getFramework7ControlsViewTemplate(isTs) {
   return `import React, { useState } from 'react'
 import { Block, BlockTitle, Card, CardContent, List } from 'framework7-react'
-import SegmentedControl from '../components/segmentedControl'
-import ToggleSwitch from '../components/toggleSwitch'
-import Badge from '../components/badge'
+import SegmentedControl from '../../components/segmentedControl'
+import ToggleSwitch from '../../components/toggleSwitch'
+import Badge from '../../components/badge'
 
 export default function ControlsView() {
   const [segment, setSegment] = useState('daily')
@@ -5071,8 +5071,8 @@ function getFramework7OverlaysViewTemplate(isTs) {
   const tsType = isTs ? ": { onShowAlert: () => void; onShowToast: (msg: string) => void; onOpenSheet: () => void }" : "";
   return `import React, { useState } from 'react'
 import { Block, Card, CardHeader, CardContent, Button, Row, Col } from 'framework7-react'
-import LoadingSpinner from '../components/loadingSpinner'
-import Skeleton from '../components/skeleton'
+import LoadingSpinner from '../../components/loadingSpinner'
+import Skeleton from '../../components/skeleton'
 
 export default function OverlaysView({ onShowAlert, onShowToast, onOpenSheet }${tsType}) {
   const [showSkeleton, setShowSkeleton] = useState(false)
@@ -5666,7 +5666,7 @@ export default function Badge({ children, color = '#38bdf8' }${tsType}) {
 function getVanillaHomeViewTemplate(isTs) {
   const tsType = isTs ? ": { onOpenSheet: () => void; onShowToast: (msg: string) => void }" : "";
   return `import React from 'react'
-import Badge from '../components/badge'
+import Badge from '../../components/badge'
 
 export default function HomeView({ onOpenSheet, onShowToast }${tsType}) {
   return (
@@ -5697,9 +5697,9 @@ export default function HomeView({ onOpenSheet, onShowToast }${tsType}) {
 // src/generators/templates/vanilla/views/controlsView.ts
 function getVanillaControlsViewTemplate(isTs) {
   return `import React, { useState } from 'react'
-import SegmentedControl from '../components/segmentedControl'
-import ToggleSwitch from '../components/toggleSwitch'
-import Badge from '../components/badge'
+import SegmentedControl from '../../components/segmentedControl'
+import ToggleSwitch from '../../components/toggleSwitch'
+import Badge from '../../components/badge'
 
 export default function ControlsView() {
   const [segment, setSegment] = useState('daily')
@@ -5735,8 +5735,8 @@ export default function ControlsView() {
 function getVanillaOverlaysViewTemplate(isTs) {
   const tsType = isTs ? ": { onShowAlert: () => void; onShowToast: (msg: string, type?: any) => void; onOpenSheet: () => void }" : "";
   return `import React, { useState } from 'react'
-import LoadingSpinner from '../components/loadingSpinner'
-import Skeleton from '../components/skeleton'
+import LoadingSpinner from '../../components/loadingSpinner'
+import Skeleton from '../../components/skeleton'
 
 export default function OverlaysView({ onShowAlert, onShowToast, onOpenSheet }${tsType}) {
   const [showSkeleton, setShowSkeleton] = useState(false)

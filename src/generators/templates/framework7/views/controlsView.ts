@@ -1,9 +1,9 @@
 export function getFramework7ControlsViewTemplate(isTs: boolean): string {
   return `import React, { useState } from 'react'
 import { Block, BlockTitle, Card, CardContent, List } from 'framework7-react'
-import SegmentedControl from '../components/segmentedControl'
-import ToggleSwitch from '../components/toggleSwitch'
-import Badge from '../components/badge'
+import SegmentedControl from '../../components/segmentedControl'
+import ToggleSwitch from '../../components/toggleSwitch'
+import Badge from '../../components/badge'
 
 export default function ControlsView() {
   const [segment, setSegment] = useState('daily')

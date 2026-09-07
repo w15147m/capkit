@@ -1,7 +1,7 @@
 export function getVanillaHomeViewTemplate(isTs: boolean): string {
   const tsType = isTs ? ': { onOpenSheet: () => void; onShowToast: (msg: string) => void }' : ''
   return `import React from 'react'
-import Badge from '../components/badge'
+import Badge from '../../components/badge'
 
 export default function HomeView({ onOpenSheet, onShowToast }${tsType}) {
   return (

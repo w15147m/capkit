@@ -2,8 +2,8 @@ export function getFramework7OverlaysViewTemplate(isTs: boolean): string {
   const tsType = isTs ? ': { onShowAlert: () => void; onShowToast: (msg: string) => void; onOpenSheet: () => void }' : ''
   return `import React, { useState } from 'react'
 import { Block, Card, CardHeader, CardContent, Button, Row, Col } from 'framework7-react'
-import LoadingSpinner from '../components/loadingSpinner'
-import Skeleton from '../components/skeleton'
+import LoadingSpinner from '../../components/loadingSpinner'
+import Skeleton from '../../components/skeleton'
 
 export default function OverlaysView({ onShowAlert, onShowToast, onOpenSheet }${tsType}) {
   const [showSkeleton, setShowSkeleton] = useState(false)
