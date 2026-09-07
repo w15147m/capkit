@@ -5,11 +5,18 @@ import { generateTailwindComponents } from './tailwindComponents.js'
 import { getAppTemplate } from './templates/app.js'
 import { generateKonstaComponents } from './konstaComponents.js'
 import { getKonstaAppTemplate } from './templates/konsta/app.js'
+import { generateDaisyComponents } from './daisyComponents.js'
 import { getDaisyAppTemplate } from './templates/daisy/app.js'
+import { generateIonicComponents } from './ionicComponents.js'
 import { getIonicAppTemplate } from './templates/ionic/app.js'
+import { generateHeroUIComponents } from './herouiComponents.js'
 import { getHeroUIAppTemplate } from './templates/heroui/app.js'
+import { generateMUIComponents } from './muiComponents.js'
 import { getMUIAppTemplate } from './templates/mui/app.js'
+import { generateFramework7Components } from './framework7Components.js'
 import { getFramework7AppTemplate } from './templates/framework7/app.js'
+import { generateVanillaComponents } from './vanillaComponents.js'
+import { getVanillaAppTemplate } from './templates/vanilla/app.js'
 import { generateStylingFiles } from './stylingGenerators.js'
 
 export async function generateProjectFiles(targetDir: string, options: ProjectOptions): Promise<void> {
@@ -204,18 +211,23 @@ body {
       appContent = getKonstaAppTemplate(options, isTs)
       break
     case 'daisy':
+      await generateDaisyComponents(targetDir, options)
       appContent = getDaisyAppTemplate(options, isTs)
       break
     case 'ionic':
+      await generateIonicComponents(targetDir, options)
       appContent = getIonicAppTemplate(options, isTs)
       break
     case 'heroui':
+      await generateHeroUIComponents(targetDir, options)
       appContent = getHeroUIAppTemplate(options, isTs)
       break
     case 'mui':
+      await generateMUIComponents(targetDir, options)
       appContent = getMUIAppTemplate(options, isTs)
       break
     case 'framework7':
+      await generateFramework7Components(targetDir, options)
       appContent = getFramework7AppTemplate(options, isTs)
       break
     case 'shadcn':
@@ -229,6 +241,7 @@ body {
         await generateTailwindComponents(targetDir, options)
         appContent = getAppTemplate(options, isTs)
       } else {
+        await generateVanillaComponents(targetDir, options)
         appContent = getVanillaAppTemplate(options, isTs)
       }
       break
@@ -387,39 +400,6 @@ When you are ready to build a standalone offline release APK:
 ` : ''}
 `
   await writeFile(path.join(targetDir, 'README.md'), readmeContent)
-}
-
-// ── Vanilla (no-UI-library) app template ──────────────────────────────────────
-function getVanillaAppTemplate(options: ProjectOptions, isTs: boolean): string {
-  return `import { useState } from 'react'
-${options.android ? "import { Capacitor } from '@capacitor/core'" : ''}
-
-function App() {
-  const [count, setCount] = useState${isTs ? '<number>' : ''}(0)
-  ${options.android
-    ? `const platform = Capacitor.getPlatform()
-  const isNative = Capacitor.isNativePlatform()`
-    : `const platform = 'web'
-  const isNative = false`}
-
-  return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px', textAlign: 'center' }}>
-      <h1 style={{ fontSize: '28px', fontWeight: 'bold', marginBottom: '8px' }}>${options.projectName}</h1>
-      <p style={{ fontSize: '14px', color: '#94a3b8', marginBottom: '24px' }}>
-        Platform: {platform.toUpperCase()} {isNative ? '• NATIVE' : '• WEB'}
-      </p>
-      <button
-        onClick={() => setCount((c) => c + 1)}
-        style={{ padding: '10px 20px', backgroundColor: '#2563eb', color: '#fff', border: 'none', borderRadius: '12px', fontSize: '14px', fontWeight: '600', cursor: 'pointer' }}
-      >
-        Count: {count}
-      </button>
-    </div>
-  )
-}
-
-export default App
-`
 }
 
 // ── Label helpers for README ──────────────────────────────────────────────────

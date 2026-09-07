@@ -1,6 +1,6 @@
 import type { ProjectOptions } from '../../../types/index.js'
 
-export function getDaisyAppTemplate(options: ProjectOptions, isTs: boolean): string {
+export function getVanillaAppTemplate(options: ProjectOptions, isTs: boolean): string {
   return `import { useState } from 'react'
 import AppHeader from './components/appHeader'
 import TabBar from './components/tabBar'
@@ -14,34 +14,26 @@ import OverlaysView from './views/overlaysView'
 
 export default function App() {
   const [currentTab, setCurrentTab] = useState('home')
+  const [isDark, setIsDark] = useState(true)
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [theme, setTheme] = useState('dark')
   const [toast, setToast] = useState<{ message: string; type?: 'info' | 'success' | 'warning' | 'error' } | null>(null)
   const [alertOpen, setAlertOpen] = useState(false)
   const [sheetOpen, setSheetOpen] = useState(false)
-
-  const toggleTheme = () => {
-    const next = theme === 'dark' ? 'light' : 'dark'
-    setTheme(next)
-    document.documentElement.setAttribute('data-theme', next)
-  }
 
   const showToast = (message: string, type: 'info' | 'success' | 'warning' | 'error' = 'info') => {
     setToast({ message, type })
   }
 
   return (
-    <div data-theme={theme} className="min-h-screen bg-base-100 text-base-content flex flex-col">
-      {/* 1. Header */}
+    <div style={{ minHeight: '100svh', display: 'flex', flexDirection: 'column', background: '#0f172a', color: '#f8fafc' }}>
       <AppHeader
         title="${options.projectName}"
         onOpenSidebar={() => setSidebarOpen(true)}
-        theme={theme}
-        onToggleTheme={toggleTheme}
+        isDark={isDark}
+        onToggleTheme={() => setIsDark(!isDark)}
       />
 
-      {/* 2. Main Content Views */}
-      <main className="flex-1 overflow-y-auto">
+      <main style={{ flex: 1, overflowY: 'auto' }}>
         {currentTab === 'home' && (
           <HomeView
             onOpenSheet={() => setSheetOpen(true)}
@@ -58,10 +50,8 @@ export default function App() {
         )}
       </main>
 
-      {/* 3. Bottom Navigation */}
       <TabBar currentTab={currentTab} onChangeTab={setCurrentTab} badgeCount={3} />
 
-      {/* 4. Overlays & Drawers */}
       <AppSidebar
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
@@ -78,11 +68,11 @@ export default function App() {
 
       <AlertDialog
         isOpen={alertOpen}
-        title="Confirm Action"
-        description="Are you sure you want to proceed with this mobile operation?"
+        title="Confirm Operation"
+        description="Are you sure you want to perform this operation?"
         onConfirm={() => {
           setAlertOpen(false)
-          showToast('Action confirmed!', 'success')
+          showToast('Confirmed successfully!', 'success')
         }}
         onCancel={() => setAlertOpen(false)}
       />
@@ -90,25 +80,17 @@ export default function App() {
       <BottomSheet
         isOpen={sheetOpen}
         onClose={() => setSheetOpen(false)}
-        title="Action Menu"
+        title="Action Sheet"
       >
-        <div className="flex flex-col gap-2">
-          <button
-            className="btn btn-primary btn-block"
-            onClick={() => {
-              setSheetOpen(false)
-              showToast('Item shared successfully!', 'success')
-            }}
-          >
-            Share Content
-          </button>
-          <button
-            className="btn btn-ghost btn-block"
-            onClick={() => setSheetOpen(false)}
-          >
-            Cancel
-          </button>
-        </div>
+        <button
+          onClick={() => {
+            setSheetOpen(false)
+            showToast('Item shared!', 'success')
+          }}
+          style={{ width: '100%', padding: '12px', background: '#38bdf8', color: '#0f172a', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}
+        >
+          Share Content
+        </button>
       </BottomSheet>
     </div>
   )

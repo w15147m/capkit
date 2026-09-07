@@ -2,142 +2,110 @@ import type { ProjectOptions } from '../../../types/index.js'
 
 export function getIonicAppTemplate(options: ProjectOptions, isTs: boolean): string {
   return `import { useState } from 'react'
-import {
-  IonApp, IonContent, IonHeader, IonTitle, IonToolbar,
-  IonTabBar, IonTabButton, IonTabs, IonLabel, IonIcon,
-  IonRouterOutlet, IonBadge, IonCard, IonCardHeader,
-  IonCardTitle, IonCardContent, IonButton, IonChip,
-  IonToast, IonAlert, setupIonicReact,
-} from '@ionic/react'
-import { IonReactRouter } from '@ionic/react-router'
-import { Route, Redirect } from 'react-router-dom'
-import { homeOutline, gridOutline, alertCircleOutline } from 'ionicons/icons'
-${options.android ? `import { Capacitor } from '@capacitor/core'` : ''}
-
-/* Core Ionic CSS */
+import { IonApp, IonContent, setupIonicReact } from '@ionic/react'
 import '@ionic/react/css/core.css'
 import '@ionic/react/css/normalize.css'
 import '@ionic/react/css/structure.css'
 import '@ionic/react/css/typography.css'
+import '@ionic/react/css/padding.css'
+import '@ionic/react/css/float-elements.css'
+import '@ionic/react/css/text-alignment.css'
+import '@ionic/react/css/text-transformation.css'
+import '@ionic/react/css/flex-utils.css'
+import '@ionic/react/css/display.css'
 
-setupIonicReact({ mode: 'ios' })
+import AppHeader from './components/appHeader'
+import TabBar from './components/tabBar'
+import AppSidebar from './components/appSidebar'
+import Toast from './components/toast'
+import AlertDialog from './components/alertDialog'
+import BottomSheet from './components/bottomSheet'
+import PullToRefresh from './components/pullToRefresh'
+import HomeView from './views/homeView'
+import ControlsView from './views/controlsView'
+import OverlaysView from './views/overlaysView'
 
-function HomePage() {
-  const [count, setCount] = useState${isTs ? '<number>' : ''}(0)
-  const [showToast, setShowToast] = useState${isTs ? '<boolean>' : ''}(false)
-  const [showAlert, setShowAlert] = useState${isTs ? '<boolean>' : ''}(false)
-  ${options.android
-    ? `const platform = Capacitor.getPlatform()
-  const isNative = Capacitor.isNativePlatform()`
-    : `const platform = 'web'
-  const isNative = false`}
+setupIonicReact({ mode: 'md' })
 
-  return (
-    <>
-      <IonHeader>
-        <IonToolbar>
-          <IonTitle>${options.projectName}</IonTitle>
-        </IonToolbar>
-      </IonHeader>
-      <IonContent className="ion-padding">
-        <IonCard>
-          <IonCardHeader>
-            <IonCardTitle>Welcome to CapKit</IonCardTitle>
-          </IonCardHeader>
-          <IonCardContent>
-            <p>Platform: <strong>{platform}</strong> {isNative ? '● Native' : '● Web'}</p>
-            <p style={{ marginTop: 8 }}>Tap count: <strong>{count}</strong></p>
-            <div style={{ marginTop: 16, display: 'flex', gap: 8 }}>
-              <IonButton onClick={() => { setCount(c => c + 1); if ((count + 1) % 5 === 0) setShowToast(true) }}>
-                Tap me!
-              </IonButton>
-              <IonButton fill="outline" color="danger" onClick={() => setShowAlert(true)}>
-                Reset
-              </IonButton>
-            </div>
-            <div style={{ marginTop: 12, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-              <IonChip color="primary">Ionic React</IonChip>
-              <IonChip color="secondary">Capacitor</IonChip>
-              <IonChip color="tertiary">React 19</IonChip>
-            </div>
-          </IonCardContent>
-        </IonCard>
+export default function App() {
+  const [currentTab, setCurrentTab] = useState('home')
+  const [isDark, setIsDark] = useState(true)
+  const [toast, setToast] = useState<{ isOpen: boolean; message: string; color?: string }>({ isOpen: false, message: '' })
+  const [alertOpen, setAlertOpen] = useState(false)
+  const [sheetOpen, setSheetOpen] = useState(false)
 
-        <IonToast
-          isOpen={showToast}
-          message={\`Reached \${count} taps! 🎉\`}
-          duration={2500}
-          onDidDismiss={() => setShowToast(false)}
-          position="top"
-        />
-        <IonAlert
-          isOpen={showAlert}
-          header="Reset counter?"
-          message="This will reset your tap count back to 0."
-          buttons={[
-            { text: 'Cancel', role: 'cancel', handler: () => setShowAlert(false) },
-            { text: 'Reset', role: 'destructive', handler: () => { setCount(0); setShowAlert(false) } },
-          ]}
-        />
-      </IonContent>
-    </>
-  )
-}
+  const toggleTheme = () => {
+    setIsDark(!isDark)
+    document.body.classList.toggle('dark', !isDark)
+  }
 
-function ComponentsPage() {
-  return (
-    <>
-      <IonHeader>
-        <IonToolbar><IonTitle>Components</IonTitle></IonToolbar>
-      </IonHeader>
-      <IonContent className="ion-padding">
-        <IonCard>
-          <IonCardContent>
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
-              <IonButton size="small">Default</IonButton>
-              <IonButton size="small" fill="outline">Outline</IonButton>
-              <IonButton size="small" color="success">Success</IonButton>
-              <IonButton size="small" color="danger">Danger</IonButton>
-            </div>
-            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-              <IonChip><IonLabel>iOS</IonLabel></IonChip>
-              <IonChip color="secondary"><IonLabel>Android</IonLabel></IonChip>
-              <IonChip color="tertiary"><IonLabel>Web</IonLabel></IonChip>
-            </div>
-          </IonCardContent>
-        </IonCard>
-      </IonContent>
-    </>
-  )
-}
+  const showToast = (message: string, color: string = 'primary') => {
+    setToast({ isOpen: true, message, color })
+  }
 
-function App() {
   return (
     <IonApp>
-      <IonReactRouter>
-        <IonTabs>
-          <IonRouterOutlet>
-            <Route exact path="/home" render={() => <HomePage />} />
-            <Route exact path="/components" render={() => <ComponentsPage />} />
-            <Route exact path="/" render={() => <Redirect to="/home" />} />
-          </IonRouterOutlet>
-          <IonTabBar slot="bottom">
-            <IonTabButton tab="home" href="/home">
-              <IonIcon icon={homeOutline} />
-              <IonLabel>Home</IonLabel>
-            </IonTabButton>
-            <IonTabButton tab="components" href="/components">
-              <IonIcon icon={gridOutline} />
-              <IonLabel>Components</IonLabel>
-              <IonBadge>2</IonBadge>
-            </IonTabButton>
-          </IonTabBar>
-        </IonTabs>
-      </IonReactRouter>
+      <AppSidebar onSelectTab={setCurrentTab} />
+
+      <div className="ion-page" id="main-content">
+        <AppHeader
+          title="${options.projectName}"
+          onToggleTheme={toggleTheme}
+          isDark={isDark}
+        />
+
+        <IonContent fullscreen>
+          <PullToRefresh onRefresh={async () => {
+            await new Promise((res) => setTimeout(res, 1500))
+            showToast('Refreshed!', 'success')
+          }} />
+
+          {currentTab === 'home' && (
+            <HomeView
+              onOpenSheet={() => setSheetOpen(true)}
+              onShowToast={(msg) => showToast(msg, 'primary')}
+            />
+          )}
+          {currentTab === 'controls' && <ControlsView />}
+          {currentTab === 'overlays' && (
+            <OverlaysView
+              onShowAlert={() => setAlertOpen(true)}
+              onShowToast={showToast}
+              onOpenSheet={() => setSheetOpen(true)}
+            />
+          )}
+        </IonContent>
+
+        <TabBar currentTab={currentTab} onChangeTab={setCurrentTab} badgeCount={3} />
+      </div>
+
+      <Toast
+        isOpen={toast.isOpen}
+        message={toast.message}
+        color={toast.color}
+        onDidDismiss={() => setToast({ isOpen: false, message: '' })}
+      />
+
+      <AlertDialog
+        isOpen={alertOpen}
+        title="Confirm Operation"
+        description="Are you sure you want to trigger this action in Ionic?"
+        onConfirm={() => {
+          setAlertOpen(false)
+          showToast('Confirmed successfully!', 'success')
+        }}
+        onCancel={() => setAlertOpen(false)}
+      />
+
+      <BottomSheet
+        isOpen={sheetOpen}
+        onClose={() => setSheetOpen(false)}
+        title="Ionic Action Sheet"
+      >
+        <p>This is a native Ionic bottom sheet modal with multiple snap points.</p>
+      </BottomSheet>
     </IonApp>
   )
 }
-
-export default App
 `
 }

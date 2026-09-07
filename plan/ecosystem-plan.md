@@ -66,7 +66,7 @@ Every scaffolded template includes a clean, production-ready set of reusable mob
 - ✔️ **`pullToRefresh/`**: Native mobile pull-down gesture to trigger data refresh.
 - ✔️ **`toggleSwitch/` & `badge/`**: Standard mobile switch and chip indicators.
 
-*(Currently generated for Tailwind CSS & Konsta UI engines)*
+*(✔️ Implemented & generated for all UI systems: Tailwind CSS, Konsta UI, DaisyUI, Ionic React, HeroUI, Material UI, Framework7, and Vanilla/SCSS/Bootstrap)*
 
 ---
 
