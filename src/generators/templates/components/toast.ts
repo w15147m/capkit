@@ -1,5 +1,6 @@
 export function getToastTemplate(isTs: boolean): string {
-  return `import React, { useEffect } from 'react'
+  return `import { useEffect } from 'react'
+import { createPortal } from 'react-dom'
 
 ${isTs ? `export type ToastType = 'success' | 'error' | 'warning' | 'info'
 
@@ -24,24 +25,27 @@ export default function Toast({
     }
   }, [duration, onClose])
 
-  const typeStyles = {
+  const typeStyles${isTs ? ': Record<string, string>' : ''} = {
     success: 'bg-emerald-600 text-white',
     error: 'bg-rose-600 text-white',
     warning: 'bg-amber-500 text-slate-950',
     info: 'bg-blue-600 text-white',
   }
 
-  const icons = {
+  const icons${isTs ? ': Record<string, string>' : ''} = {
     success: '✓',
     error: '✕',
     warning: '⚠',
     info: 'ℹ',
   }
 
-  return (
-    <div className="fixed top-4 left-4 right-4 z-50 flex justify-center pointer-events-none pt-[env(safe-area-inset-top,0px)]">
+  return createPortal(
+    <div
+      className="fixed inset-x-4 z-[9999] flex justify-center pointer-events-none"
+      style={{ top: 'calc(1rem + env(safe-area-inset-top, 0px))' }}
+    >
       <div
-        className={\`pointer-events-auto flex items-center gap-2.5 px-4 py-2.5 rounded-2xl shadow-xl font-medium text-xs max-w-sm w-full transition-all animate-in slide-in-from-top-4 \${
+        className={\`pointer-events-auto flex items-center gap-2.5 px-4 py-2.5 rounded-2xl shadow-xl font-medium text-xs max-w-sm w-full transition-transform duration-300 translate-y-0 \${
           typeStyles[type]
         }\`}
       >
@@ -51,7 +55,8 @@ export default function Toast({
           ✕
         </button>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }
 `

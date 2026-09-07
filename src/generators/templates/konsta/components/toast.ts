@@ -1,5 +1,6 @@
 export function getKonstaToastTemplate(isTs: boolean): string {
-  return `import React, { useEffect } from 'react'
+  return `import { useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { Toast as KonstaToast, Button } from 'konsta/react'
 
 ${isTs ? `export type ToastType = 'success' | 'error' | 'warning' | 'info'
@@ -27,15 +28,16 @@ export default function Toast({
 
   if (!opened) return null
 
-  return (
+  return createPortal(
     <KonstaToast
       position="top"
       opened={opened}
       button={<Button rounded clear inline onClick={onClose}>✕</Button>}
-      className="z-50"
+      className="z-[9999]"
     >
       <div className="shrink">{text}</div>
-    </KonstaToast>
+    </KonstaToast>,
+    document.body,
   )
 }
 `

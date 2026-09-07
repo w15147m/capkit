@@ -5,6 +5,12 @@ import { generateTailwindComponents } from './tailwindComponents.js'
 import { getAppTemplate } from './templates/app.js'
 import { generateKonstaComponents } from './konstaComponents.js'
 import { getKonstaAppTemplate } from './templates/konsta/app.js'
+import { getDaisyAppTemplate } from './templates/daisy/app.js'
+import { getIonicAppTemplate } from './templates/ionic/app.js'
+import { getHeroUIAppTemplate } from './templates/heroui/app.js'
+import { getMUIAppTemplate } from './templates/mui/app.js'
+import { getFramework7AppTemplate } from './templates/framework7/app.js'
+import { generateStylingFiles } from './stylingGenerators.js'
 
 export async function generateProjectFiles(targetDir: string, options: ProjectOptions): Promise<void> {
   const isTs = options.language === 'ts'
@@ -27,15 +33,28 @@ export async function generateProjectFiles(targetDir: string, options: ProjectOp
 `
   await writeFile(path.join(targetDir, 'index.html'), indexHtml)
 
-  // 2. vite.config
+  // 2. vite.config — branches per style engine
   let viteConfig = ''
-  if (options.tailwind) {
+  if (options.style === 'tailwind') {
     viteConfig = `import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  server: {
+    host: true,
+    port: 5173,
+  },
+})
+`
+  } else if (options.style === 'unocss') {
+    viteConfig = `import UnoCSS from '@unocss/vite'
+import react from '@vitejs/plugin-react'
+import { defineConfig } from 'vite'
+
+export default defineConfig({
+  plugins: [react(), UnoCSS()],
   server: {
     host: true,
     port: 5173,
@@ -58,9 +77,15 @@ export default defineConfig({
   await writeFile(path.join(targetDir, `vite.config.${configExt}`), viteConfig)
 
   // 3. src/main.tsx or main.jsx
+  let mainImports = `import './index.css'`
+  if (options.style === 'scss') {
+    mainImports = `import './styles/main.scss'`
+  } else if (options.style === 'unocss') {
+    mainImports = `import 'virtual:uno.css'\nimport './index.css'`
+  }
   const mainContent = `import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import './index.css'
+${mainImports}
 import App from './App.${ext}'
 
 createRoot(document.getElementById('root')${isTs ? '!' : ''}).render(
@@ -71,9 +96,9 @@ createRoot(document.getElementById('root')${isTs ? '!' : ''}).render(
 `
   await writeFile(path.join(targetDir, 'src', `main.${ext}`), mainContent)
 
-  // 4. src/index.css
+  // 4. src/index.css — branches per style + uiLibrary
   let indexCss = ''
-  if (options.tailwind && options.konsta) {
+  if (options.style === 'tailwind' && options.uiLibrary === 'konsta') {
     indexCss = `@import "tailwindcss";
 @import "konsta/theme.css";
 @source "../node_modules/konsta";
@@ -95,7 +120,24 @@ body {
   flex-direction: column;
 }
 `
-  } else if (options.tailwind) {
+  } else if (options.style === 'tailwind' && options.uiLibrary === 'daisy') {
+    indexCss = `@import "tailwindcss";
+@plugin "daisyui";
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+#root {
+  width: 100%;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+}
+`
+  } else if (options.style === 'tailwind') {
     indexCss = `@import "tailwindcss";
 
 body {
@@ -113,10 +155,10 @@ body {
   flex-direction: column;
 }
 `
-  } else {
-    indexCss = `body {
-  margin: 0;
-  padding: 0;
+  } else if (options.style === 'bootstrap') {
+    indexCss = `@import "bootstrap/dist/css/bootstrap.min.css";
+
+body {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background-color: #0f172a;
   color: #f8fafc;
@@ -124,54 +166,72 @@ body {
 
 #root {
   width: 100%;
-  min-height: 100vh;
+  min-height: 100svh;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
+}
+`
+  } else {
+    // vanilla, cssmodules, scss (scss has its own main.scss), unocss
+    indexCss = `body {
+  margin: 0;
+  padding: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: #0f172a;
+  color: #f8fafc;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  width: 100%;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
 }
 `
   }
   await writeFile(path.join(targetDir, 'src', 'index.css'), indexCss)
 
-  // 5. src/App.tsx or App.jsx
+  // 4b. Generate extra styling files (SCSS partials, UnoCSS config, etc.)
+  await generateStylingFiles(targetDir, options)
+
+  // 5. src/App.tsx or App.jsx — route by uiLibrary, then fall back to style
   let appContent = ''
-  if (options.konsta) {
-    await generateKonstaComponents(targetDir, options)
-    appContent = getKonstaAppTemplate(options, isTs)
-  } else if (options.tailwind) {
-    await generateTailwindComponents(targetDir, options)
-    appContent = getAppTemplate(options, isTs)
-  } else {
-    appContent = `import { useState } from 'react'
-${options.android ? "import { Capacitor } from '@capacitor/core'" : ''}
-
-function App() {
-  const [count, setCount] = useState${isTs ? '<number>' : ''}(0)
-  ${options.android
-    ? `const platform = Capacitor.getPlatform()
-  const isNative = Capacitor.isNativePlatform()`
-    : `const platform = 'web'
-  const isNative = false`}
-
-  return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px', textAlign: 'center' }}>
-      <h1 style={{ fontSize: '28px', fontWeight: 'bold', marginBottom: '8px' }}>${options.projectName}</h1>
-      <p style={{ fontSize: '14px', color: '#94a3b8', marginBottom: '24px' }}>
-        Platform: {platform.toUpperCase()} {isNative ? '• NATIVE' : '• WEB'}
-      </p>
-      <button
-        onClick={() => setCount((c) => c + 1)}
-        style={{ padding: '10px 20px', backgroundColor: '#2563eb', color: '#fff', border: 'none', borderRadius: '12px', fontSize: '14px', fontWeight: '600', cursor: 'pointer' }}
-      >
-        Count: {count}
-      </button>
-    </div>
-  )
-}
-
-export default App
-`
+  switch (options.uiLibrary) {
+    case 'konsta':
+      await generateKonstaComponents(targetDir, options)
+      appContent = getKonstaAppTemplate(options, isTs)
+      break
+    case 'daisy':
+      appContent = getDaisyAppTemplate(options, isTs)
+      break
+    case 'ionic':
+      appContent = getIonicAppTemplate(options, isTs)
+      break
+    case 'heroui':
+      appContent = getHeroUIAppTemplate(options, isTs)
+      break
+    case 'mui':
+      appContent = getMUIAppTemplate(options, isTs)
+      break
+    case 'framework7':
+      appContent = getFramework7AppTemplate(options, isTs)
+      break
+    case 'shadcn':
+      // shadcn uses tailwind components with Radix — fall through to tailwind
+      await generateTailwindComponents(targetDir, options)
+      appContent = getAppTemplate(options, isTs)
+      break
+    case 'none':
+    default:
+      if (options.style === 'tailwind') {
+        await generateTailwindComponents(targetDir, options)
+        appContent = getAppTemplate(options, isTs)
+      } else {
+        appContent = getVanillaAppTemplate(options, isTs)
+      }
+      break
   }
   await writeFile(path.join(targetDir, 'src', `App.${ext}`), appContent)
 
@@ -251,7 +311,8 @@ Scaffolded with **[CapKit](https://github.com/w15147m/capkit)** — Interactive 
 
 - **Framework**: React 19 (${options.language.toUpperCase()})
 - **Build Tool**: Vite
-${options.tailwind ? '- **Styling**: Tailwind CSS v4\n' : ''}${options.konsta ? '- **Mobile UI Components**: Konsta UI (iOS & Material design)\n' : ''}${options.android ? '- **Native Runtime**: Capacitor 8 (Android)\n' : ''}
+- **Styling**: ${getStyleLabel(options.style)}
+${options.uiLibrary !== 'none' ? `- **UI Library**: ${getUILibraryLabel(options.uiLibrary)}\n` : ''}${options.android ? '- **Native Runtime**: Capacitor 8 (Android)\n' : ''}
 
 ---
 
@@ -326,4 +387,63 @@ When you are ready to build a standalone offline release APK:
 ` : ''}
 `
   await writeFile(path.join(targetDir, 'README.md'), readmeContent)
+}
+
+// ── Vanilla (no-UI-library) app template ──────────────────────────────────────
+function getVanillaAppTemplate(options: ProjectOptions, isTs: boolean): string {
+  return `import { useState } from 'react'
+${options.android ? "import { Capacitor } from '@capacitor/core'" : ''}
+
+function App() {
+  const [count, setCount] = useState${isTs ? '<number>' : ''}(0)
+  ${options.android
+    ? `const platform = Capacitor.getPlatform()
+  const isNative = Capacitor.isNativePlatform()`
+    : `const platform = 'web'
+  const isNative = false`}
+
+  return (
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px', textAlign: 'center' }}>
+      <h1 style={{ fontSize: '28px', fontWeight: 'bold', marginBottom: '8px' }}>${options.projectName}</h1>
+      <p style={{ fontSize: '14px', color: '#94a3b8', marginBottom: '24px' }}>
+        Platform: {platform.toUpperCase()} {isNative ? '• NATIVE' : '• WEB'}
+      </p>
+      <button
+        onClick={() => setCount((c) => c + 1)}
+        style={{ padding: '10px 20px', backgroundColor: '#2563eb', color: '#fff', border: 'none', borderRadius: '12px', fontSize: '14px', fontWeight: '600', cursor: 'pointer' }}
+      >
+        Count: {count}
+      </button>
+    </div>
+  )
+}
+
+export default App
+`
+}
+
+// ── Label helpers for README ──────────────────────────────────────────────────
+function getStyleLabel(style: string): string {
+  const labels: Record<string, string> = {
+    tailwind:   'Tailwind CSS v4',
+    scss:       'SCSS / Sass',
+    cssmodules: 'CSS Modules',
+    bootstrap:  'Bootstrap 5',
+    unocss:     'UnoCSS',
+    vanilla:    'Vanilla CSS',
+  }
+  return labels[style] ?? style
+}
+
+function getUILibraryLabel(lib: string): string {
+  const labels: Record<string, string> = {
+    konsta:     'Konsta UI (iOS & Material)',
+    daisy:      'DaisyUI',
+    shadcn:     'shadcn/ui',
+    heroui:     'HeroUI (NextUI)',
+    ionic:      'Ionic React',
+    framework7: 'Framework7',
+    mui:        'Material UI',
+  }
+  return labels[lib] ?? lib
 }

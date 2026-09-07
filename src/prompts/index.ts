@@ -1,6 +1,7 @@
 import * as p from '@clack/prompts'
 import pc from 'picocolors'
-import type { Language } from '../types/index.js'
+import type { Language, StyleEngine, UILibrary } from '../types/index.js'
+import { makeProjectOptions } from '../types/index.js'
 import path from 'pathe'
 import type { ProjectOptions } from '../types/index.js'
 import { formatPackageName, isDirectoryEmpty } from '../utils/filesystem.js'
@@ -82,20 +83,48 @@ export async function runPrompts(targetDirArg?: string): Promise<ProjectOptions>
           initialValue: 'ts',
         }),
 
-      tailwind: () =>
-        p.confirm({
-          message: 'Include Tailwind CSS v4?',
-          initialValue: true,
+      style: () =>
+        p.select({
+          message: 'Select a styling solution:',
+          options: [
+            { value: 'tailwind',   label: 'Tailwind CSS v4',  hint: 'Utility-first, recommended' },
+            { value: 'scss',       label: 'SCSS / Sass',       hint: 'Nested CSS with variables' },
+            { value: 'cssmodules', label: 'CSS Modules',       hint: 'Scoped per-component styling' },
+            { value: 'bootstrap',  label: 'Bootstrap 5',       hint: 'Classic responsive grid' },
+            { value: 'unocss',     label: 'UnoCSS',            hint: 'On-demand atomic CSS engine' },
+            { value: 'vanilla',    label: 'Vanilla CSS',       hint: 'Pure CSS design tokens' },
+          ],
+          initialValue: 'tailwind',
         }),
 
-      konsta: ({ results }) => {
-        if (!results.tailwind) {
-          p.log.warn('Konsta UI requires Tailwind CSS — skipping.')
-          return Promise.resolve(false)
-        }
-        return p.confirm({
-          message: 'Include Konsta UI mobile components (native iOS / Android look)?',
-          initialValue: true,
+      uiLibrary: ({ results }) => {
+        const style = results.style as StyleEngine
+        const isTailwind = style === 'tailwind'
+
+        // Options available for any style engine
+        const universalOptions = [
+          { value: 'ionic',      label: 'Ionic React',   hint: 'Full native-feel cross-platform UI' },
+          { value: 'framework7', label: 'Framework7',    hint: 'iOS & Material native mobile UI engine' },
+          { value: 'mui',        label: 'Material UI',   hint: 'Google Material Design 3 components' },
+          { value: 'none',       label: 'None',          hint: 'No UI library' },
+        ]
+
+        // Tailwind-only options prepended when Tailwind is selected
+        const tailwindOptions = [
+          { value: 'konsta', label: 'Konsta UI',  hint: 'Pixel-perfect iOS & Android native look' },
+          { value: 'daisy',  label: 'DaisyUI',    hint: '50+ themes, semantic Tailwind classes' },
+          { value: 'shadcn', label: 'shadcn/ui',  hint: 'Radix primitives + copy-paste components' },
+          { value: 'heroui', label: 'HeroUI',     hint: 'Polished animations and dark mode' },
+        ]
+
+        const options = isTailwind
+          ? [...tailwindOptions, ...universalOptions]
+          : universalOptions
+
+        return p.select({
+          message: 'Select a UI component library:',
+          options,
+          initialValue: isTailwind ? 'konsta' : 'none',
         })
       },
 
@@ -143,15 +172,16 @@ export async function runPrompts(targetDirArg?: string): Promise<ProjectOptions>
     ? formatPackageName(path.basename(process.cwd())) || 'my-capacitor-app'
     : formatPackageName(rawName)
 
-  return {
+  return makeProjectOptions({
     projectName: finalProjectName,
     targetDir: finalTargetDir,
     framework: 'react',
     language: (results.language as Language) ?? 'ts',
-    tailwind: Boolean(results.tailwind),
-    konsta: Boolean(results.konsta),
+    style: (results.style as StyleEngine) ?? 'tailwind',
+    uiLibrary: (results.uiLibrary as UILibrary) ?? 'none',
     android: Boolean(results.android),
     packageManager: results.packageManager as ProjectOptions['packageManager'],
     install: Boolean(results.install),
-  }
+  })
 }
+
