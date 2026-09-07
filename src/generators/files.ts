@@ -1,8 +1,12 @@
 import path from 'pathe'
 import type { ProjectOptions } from '../types/index.js'
-import { writeFile } from '../utils/filesystem.js'
+import { writeFile, writeJson } from '../utils/filesystem.js'
 
 export async function generateProjectFiles(targetDir: string, options: ProjectOptions): Promise<void> {
+  const isTs = options.language === 'ts'
+  const ext = isTs ? 'tsx' : 'jsx'
+  const configExt = isTs ? 'ts' : 'js'
+
   // 1. index.html
   const indexHtml = `<!doctype html>
 <html lang="en">
@@ -13,13 +17,13 @@ export async function generateProjectFiles(targetDir: string, options: ProjectOp
   </head>
   <body>
     <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
+    <script type="module" src="/src/main.${ext}"></script>
   </body>
 </html>
 `
   await writeFile(path.join(targetDir, 'index.html'), indexHtml)
 
-  // 2. vite.config.js
+  // 2. vite.config
   let viteConfig = ''
   if (options.tailwind) {
     viteConfig = `import tailwindcss from '@tailwindcss/vite'
@@ -47,21 +51,21 @@ export default defineConfig({
 })
 `
   }
-  await writeFile(path.join(targetDir, 'vite.config.js'), viteConfig)
+  await writeFile(path.join(targetDir, `vite.config.${configExt}`), viteConfig)
 
-  // 3. src/main.jsx
-  const mainJsx = `import { StrictMode } from 'react'
+  // 3. src/main.tsx or main.jsx
+  const mainContent = `import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
-import App from './App.jsx'
+import App from './App.${ext}'
 
-createRoot(document.getElementById('root')).render(
+createRoot(document.getElementById('root')${isTs ? '!' : ''}).render(
   <StrictMode>
     <App />
   </StrictMode>,
 )
 `
-  await writeFile(path.join(targetDir, 'src', 'main.jsx'), mainJsx)
+  await writeFile(path.join(targetDir, 'src', `main.${ext}`), mainContent)
 
   // 4. src/index.css
   let indexCss = ''
@@ -126,10 +130,10 @@ body {
   }
   await writeFile(path.join(targetDir, 'src', 'index.css'), indexCss)
 
-  // 5. src/App.jsx
-  let appJsx = ''
+  // 5. src/App.tsx or App.jsx
+  let appContent = ''
   if (options.konsta) {
-    appJsx = `import { useState, useEffect } from 'react'
+    appContent = `import { useState, useEffect } from 'react'
 ${options.android ? "import { Capacitor } from '@capacitor/core'" : ''}
 import {
   App as KonstaApp,
@@ -146,13 +150,15 @@ import {
 } from 'konsta/react'
 
 function App() {
-  const [count, setCount] = useState(0)
-  const [darkMode, setDarkMode] = useState(true)
-  const [hapticsEnabled, setHapticsEnabled] = useState(true)
+  const [count, setCount] = useState${isTs ? '<number>' : ''}(0)
+  const [darkMode, setDarkMode] = useState${isTs ? '<boolean>' : ''}(true)
+  const [hapticsEnabled, setHapticsEnabled] = useState${isTs ? '<boolean>' : ''}(true)
 
-  ${options.android ? `const platform = Capacitor.getPlatform()
+  ${options.android
+    ? `const platform = Capacitor.getPlatform()
   const isNative = Capacitor.isNativePlatform()
-  const theme = platform === 'ios' ? 'ios' : 'material'` : `const platform = 'web'
+  const theme = platform === 'ios' ? 'ios' : 'material'`
+    : `const platform = 'web'
   const isNative = false
   const theme = 'material'`}
 
@@ -177,7 +183,7 @@ function App() {
                 <button
                   type="button"
                   onClick={() => setDarkMode(!darkMode)}
-                  className="p-1.5 rounded-full transition-colors bg-slate-800 text-amber-300"
+                  className="p-1.5 rounded-full bg-slate-800 text-amber-300"
                   aria-label="Toggle Theme"
                 >
                   {darkMode ? '🌙' : '☀️'}
@@ -191,10 +197,10 @@ function App() {
 
           <Block className="text-center pt-4">
             <h1 className={\`text-2xl font-bold tracking-tight \${darkMode ? 'text-white' : 'text-slate-900'}\`}>
-              React Mobile App
+              ${options.projectName}
             </h1>
             <p className={\`text-xs mt-1 \${darkMode ? 'text-slate-400' : 'text-slate-500'}\`}>
-              Konsta UI &bull; Tailwind CSS v4 &bull; Capacitor \${isNative ? 'Native' : 'Web'}
+              Konsta UI • Tailwind CSS v4 • Capacitor {isNative ? 'Native' : 'Web'}
             </p>
           </Block>
 
@@ -214,11 +220,7 @@ function App() {
                   Taps: {count}
                 </p>
               </div>
-              <Button
-                rounded
-                className="w-auto px-4"
-                onClick={() => setCount((c) => c + 1)}
-              >
+              <Button rounded className="w-auto px-4" onClick={() => setCount((c) => c + 1)}>
                 Increment ({count})
               </Button>
             </div>
@@ -245,7 +247,7 @@ function App() {
               after={
                 <Toggle
                   checked={darkMode}
-                  onChange={(e) => setDarkMode(e.target.checked)}
+                  onChange={(e${isTs ? ': React.ChangeEvent<HTMLInputElement>' : ''}) => setDarkMode(e.target.checked)}
                 />
               }
             />
@@ -257,7 +259,7 @@ function App() {
               after={
                 <Toggle
                   checked={hapticsEnabled}
-                  onChange={(e) => setHapticsEnabled(e.target.checked)}
+                  onChange={(e${isTs ? ': React.ChangeEvent<HTMLInputElement>' : ''}) => setHapticsEnabled(e.target.checked)}
                 />
               }
             />
@@ -271,20 +273,23 @@ function App() {
 export default App
 `
   } else {
-    appJsx = `import { useState } from 'react'
+    appContent = `import { useState } from 'react'
 ${options.android ? "import { Capacitor } from '@capacitor/core'" : ''}
 
 function App() {
-  const [count, setCount] = useState(0)
-  ${options.android ? `const platform = Capacitor.getPlatform()
-  const isNative = Capacitor.isNativePlatform()` : `const platform = 'web'
+  const [count, setCount] = useState${isTs ? '<number>' : ''}(0)
+  ${options.android
+    ? `const platform = Capacitor.getPlatform()
+  const isNative = Capacitor.isNativePlatform()`
+    : `const platform = 'web'
   const isNative = false`}
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center justify-center p-6">
       <h1 className="text-3xl font-bold mb-2">${options.projectName}</h1>
-      <p className="text-sm text-slate-400 mb-6">Platform: {platform.toUpperCase()} {isNative ? '• NATIVE' : '• WEB'}</p>
-      
+      <p className="text-sm text-slate-400 mb-6">
+        Platform: {platform.toUpperCase()} {isNative ? '• NATIVE' : '• WEB'}
+      </p>
       <button
         onClick={() => setCount((c) => c + 1)}
         className="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 rounded-xl font-medium text-white shadow-lg active:scale-95 transition-all"
@@ -298,22 +303,72 @@ function App() {
 export default App
 `
   }
-  await writeFile(path.join(targetDir, 'src', 'App.jsx'), appJsx)
+  await writeFile(path.join(targetDir, 'src', `App.${ext}`), appContent)
 
-  // 6. .gitignore
+  // 6. tsconfig.json (only for TypeScript projects)
+  if (isTs) {
+    const tsconfig = {
+      files: [],
+      references: [
+        { path: './tsconfig.app.json' },
+        { path: './tsconfig.node.json' },
+      ],
+    }
+    await writeJson(path.join(targetDir, 'tsconfig.json'), tsconfig)
+
+    const tsconfigApp = {
+      compilerOptions: {
+        tsBuildInfoFile: './node_modules/.tmp/tsconfig.app.tsbuildinfo',
+        target: 'ES2020',
+        useDefineForClassFields: true,
+        lib: ['ES2020', 'DOM', 'DOM.Iterable'],
+        module: 'ESNext',
+        skipLibCheck: true,
+        moduleResolution: 'bundler',
+        allowImportingTsExtensions: true,
+        isolatedModules: true,
+        moduleDetection: 'force',
+        noEmit: true,
+        jsx: 'react-jsx',
+        strict: true,
+        noUnusedLocals: true,
+        noUnusedParameters: true,
+        noFallthroughCasesInSwitch: true,
+        noUncheckedSideEffectImports: true,
+      },
+      include: ['src'],
+    }
+    await writeJson(path.join(targetDir, 'tsconfig.app.json'), tsconfigApp)
+
+    const tsconfigNode = {
+      compilerOptions: {
+        tsBuildInfoFile: './node_modules/.tmp/tsconfig.node.tsbuildinfo',
+        target: 'ES2022',
+        lib: ['ES2023'],
+        module: 'ESNext',
+        skipLibCheck: true,
+        moduleResolution: 'bundler',
+        allowImportingTsExtensions: true,
+        isolatedModules: true,
+        moduleDetection: 'force',
+        noEmit: true,
+        strict: true,
+        noUnusedLocals: true,
+        noUnusedParameters: true,
+        noFallthroughCasesInSwitch: true,
+        noUncheckedSideEffectImports: true,
+      },
+      include: ['vite.config.ts'],
+    }
+    await writeJson(path.join(targetDir, 'tsconfig.node.json'), tsconfigNode)
+  }
+
+  // 7. .gitignore
   const gitignore = `node_modules
 dist
 dist-ssr
 *.local
-.vscode/*
-!.vscode/extensions.json
-.idea
 .DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
 `
   await writeFile(path.join(targetDir, '.gitignore'), gitignore)
 }

@@ -1,5 +1,6 @@
 import * as p from '@clack/prompts'
 import pc from 'picocolors'
+import type { Language } from '../types/index.js'
 import path from 'pathe'
 import type { ProjectOptions } from '../types/index.js'
 import { formatPackageName, isDirectoryEmpty } from '../utils/filesystem.js'
@@ -38,9 +39,19 @@ export async function runPrompts(): Promise<ProjectOptions> {
         p.select({
           message: 'Select a frontend framework:',
           options: [
-            { value: 'react', label: 'React', hint: 'Vite + React 19 + JSX' },
+            { value: 'react', label: 'React', hint: 'Vite + React 19' },
           ],
           initialValue: 'react',
+        }),
+
+      language: () =>
+        p.select({
+          message: 'Select language:',
+          options: [
+            { value: 'ts', label: 'TypeScript', hint: 'Recommended' },
+            { value: 'js', label: 'JavaScript' },
+          ],
+          initialValue: 'ts',
         }),
 
       tailwind: () =>
@@ -99,6 +110,7 @@ export async function runPrompts(): Promise<ProjectOptions> {
     projectName: formatPackageName(projectName),
     targetDir,
     framework: 'react',
+    language: (results.language as Language) ?? 'ts',
     tailwind: Boolean(results.tailwind),
     konsta: Boolean(results.konsta),
     android: Boolean(results.android),

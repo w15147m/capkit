@@ -13,6 +13,10 @@ export function generatePackageJson(options: ProjectOptions): Record<string, unk
     vite: '^8.2.2',
   }
 
+  if (options.language === 'ts') {
+    devDependencies['typescript'] = '^5.7.2'
+  }
+
   const scripts: Record<string, string> = {
     dev: 'vite',
     build: 'vite build',
