@@ -15,6 +15,6 @@ export async function installDependencies(targetDir: string, packageManager: Pac
   const args = packageManager === 'yarn' ? [] : ['install']
   await execa(packageManager, args, {
     cwd: targetDir,
-    stdio: 'ignore',
+    stdio: 'pipe',
   })
 }

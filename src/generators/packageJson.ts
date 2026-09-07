@@ -37,8 +37,8 @@ export function generatePackageJson(options: ProjectOptions): Record<string, unk
       dependencies['@popperjs/core'] = '^2.11.8'
       break
     case 'unocss':
-      devDependencies['unocss'] = '^65.6.0'
-      devDependencies['@unocss/vite'] = '^65.6.0'
+      devDependencies['unocss'] = '^66.10.0'
+      devDependencies['@unocss/vite'] = '^66.10.0'
       break
     case 'cssmodules':
     case 'vanilla':
@@ -66,13 +66,11 @@ export function generatePackageJson(options: ProjectOptions): Record<string, unk
       break
     case 'ionic':
       dependencies['@ionic/react'] = '^8.5.0'
-      dependencies['@ionic/react-router'] = '^8.5.0'
       dependencies['ionicons'] = '^7.4.0'
-      dependencies['react-router-dom'] = '^6.30.0'
       break
     case 'framework7':
-      dependencies['framework7'] = '^9.2.0'
-      dependencies['framework7-react'] = '^9.2.0'
+      dependencies['framework7'] = '^9.1.3'
+      dependencies['framework7-react'] = '^9.1.3'
       break
     case 'mui':
       dependencies['@mui/material'] = '^7.1.1'
