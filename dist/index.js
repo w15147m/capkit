@@ -501,6 +501,210 @@ function App() {
 
 export default App
 `;
+  } else if (options.tailwind) {
+    appContent = `import { useState, useEffect } from 'react'
+${options.android ? "import { Capacitor } from '@capacitor/core'" : ""}
+
+function App() {
+  const [count, setCount] = useState${isTs ? "<number>" : ""}(0)
+  const [darkMode, setDarkMode] = useState${isTs ? "<boolean>" : ""}(true)
+  const [hapticsEnabled, setHapticsEnabled] = useState${isTs ? "<boolean>" : ""}(true)
+
+  ${options.android ? `const platform = Capacitor.getPlatform()
+  const isNative = Capacitor.isNativePlatform()` : `const platform = 'web'
+  const isNative = false`}
+
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add('dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+    }
+  }, [darkMode])
+
+  return (
+    <div className={\`min-h-screen transition-colors duration-200 \${
+      darkMode ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'
+    }\`}>
+      {/* Sticky Header / Navbar */}
+      <header className={\`sticky top-0 z-50 px-4 py-3 border-b backdrop-blur-md transition-colors \${
+        darkMode ? 'bg-slate-950/80 border-slate-800/80' : 'bg-white/80 border-slate-200/80'
+      }\`}>
+        <div className="max-w-md mx-auto flex items-center justify-between">
+          <div>
+            <h2 className="text-base font-bold tracking-tight">${options.projectName}</h2>
+            <p className="text-[11px] text-slate-400">Mobile Starter Kit</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setDarkMode(!darkMode)}
+              className={\`p-1.5 rounded-full transition-colors \${
+                darkMode ? 'bg-slate-800 text-amber-300' : 'bg-slate-200 text-slate-700'
+              }\`}
+              aria-label="Toggle Theme"
+            >
+              {darkMode ? '\u{1F319}' : '\u2600\uFE0F'}
+            </button>
+            <span className={\`text-[11px] font-semibold px-2 py-0.5 rounded-full text-white \${
+              isNative ? 'bg-emerald-600' : 'bg-blue-600'
+            }\`}>
+              {platform.toUpperCase()}
+            </span>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content Container */}
+      <main className="max-w-md mx-auto px-4 pb-12 pt-6 space-y-6">
+        {/* Hero Section */}
+        <section className="text-center pt-2">
+          <div className="inline-flex items-center justify-center p-3.5 bg-gradient-to-tr from-cyan-500/20 to-blue-600/20 border border-cyan-500/30 rounded-2xl mb-3 shadow-lg">
+            <svg
+              className="w-10 h-10 text-cyan-400"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.75"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <rect width="14" height="20" x="5" y="2" rx="2" ry="2" />
+              <path d="M12 18h.01" />
+            </svg>
+          </div>
+          <h1 className={\`text-2xl font-bold tracking-tight \${darkMode ? 'text-white' : 'text-slate-900'}\`}>
+            React Mobile App
+          </h1>
+          <p className={\`text-xs mt-1.5 \${darkMode ? 'text-slate-400' : 'text-slate-500'}\`}>
+            Tailwind CSS v4 &bull; Capacitor {isNative ? 'Native' : 'Web'}
+          </p>
+        </section>
+
+        {/* Section 1: Interactive State & HMR */}
+        <section className="space-y-2">
+          <h3 className={\`text-xs font-semibold uppercase tracking-wider px-1 \${
+            darkMode ? 'text-slate-400' : 'text-slate-500'
+          }\`}>
+            Interactive State & HMR
+          </h3>
+          <div className={\`p-4 rounded-2xl border transition-colors flex items-center justify-between \${
+            darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-sm'
+          }\`}>
+            <div>
+              <p className="font-semibold text-sm">State Counter</p>
+              <p className={\`text-xs mt-0.5 \${darkMode ? 'text-slate-400' : 'text-slate-500'}\`}>
+                Taps: {count}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setCount((c) => c + 1)}
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-500 active:scale-95 text-white text-xs font-semibold rounded-xl shadow-md transition-all"
+            >
+              Increment ({count})
+            </button>
+          </div>
+        </section>
+
+        {/* Section 2: Device & App Settings */}
+        <section className="space-y-2">
+          <h3 className={\`text-xs font-semibold uppercase tracking-wider px-1 \${
+            darkMode ? 'text-slate-400' : 'text-slate-500'
+          }\`}>
+            Device & App Settings
+          </h3>
+          <div className={\`divide-y rounded-2xl border transition-colors overflow-hidden \${
+            darkMode
+              ? 'bg-slate-900 border-slate-800 divide-slate-800/80'
+              : 'bg-white border-slate-200 divide-slate-100 shadow-sm'
+          }\`}>
+            {/* Platform Item */}
+            <div className="p-3.5 flex items-center justify-between">
+              <div>
+                <p className="font-medium text-sm">Platform</p>
+                <p className={\`text-xs mt-0.5 \${darkMode ? 'text-slate-400' : 'text-slate-500'}\`}>
+                  {isNative ? 'Running on physical device' : 'Running in browser'}
+                </p>
+              </div>
+              <span className={\`text-xs font-semibold \${darkMode ? 'text-slate-300' : 'text-slate-600'}\`}>
+                {platform.toUpperCase()}
+              </span>
+            </div>
+
+            {/* Dark Mode Toggle */}
+            <div className="p-3.5 flex items-center justify-between">
+              <div>
+                <p className="font-medium text-sm">Dark Mode</p>
+                <p className={\`text-xs mt-0.5 \${darkMode ? 'text-slate-400' : 'text-slate-500'}\`}>
+                  {darkMode ? 'Pure Dark theme active' : 'Clean Light theme active'}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setDarkMode(!darkMode)}
+                className={\`w-12 h-6 flex items-center rounded-full p-1 transition-colors duration-200 cursor-pointer \${
+                  darkMode ? 'bg-blue-600 justify-end' : 'bg-slate-300 justify-start'
+                }\`}
+              >
+                <div className="w-4 h-4 rounded-full bg-white shadow-md transition-transform" />
+              </button>
+            </div>
+
+            {/* Haptics Toggle */}
+            <div className="p-3.5 flex items-center justify-between">
+              <div>
+                <p className="font-medium text-sm">Haptics Feedback</p>
+                <p className={\`text-xs mt-0.5 \${darkMode ? 'text-slate-400' : 'text-slate-500'}\`}>
+                  {hapticsEnabled ? 'Vibration enabled' : 'Disabled'}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setHapticsEnabled(!hapticsEnabled)}
+                className={\`w-12 h-6 flex items-center rounded-full p-1 transition-colors duration-200 cursor-pointer \${
+                  hapticsEnabled ? 'bg-blue-600 justify-end' : 'bg-slate-300 justify-start'
+                }\`}
+              >
+                <div className="w-4 h-4 rounded-full bg-white shadow-md transition-transform" />
+              </button>
+            </div>
+          </div>
+        </section>
+
+        {/* Section 3: Next Steps */}
+        <section className="space-y-2">
+          <h3 className={\`text-xs font-semibold uppercase tracking-wider px-1 \${
+            darkMode ? 'text-slate-400' : 'text-slate-500'
+          }\`}>
+            Next Steps
+          </h3>
+          <div className={\`divide-y rounded-2xl border transition-colors overflow-hidden \${
+            darkMode
+              ? 'bg-slate-900 border-slate-800 divide-slate-800/80'
+              : 'bg-white border-slate-200 divide-slate-100 shadow-sm'
+          }\`}>
+            <div className="p-3.5">
+              <p className="font-medium text-sm">\u{1F525} Hot Module Reload</p>
+              <p className={\`text-xs mt-0.5 \${darkMode ? 'text-slate-400' : 'text-slate-500'}\`}>
+                Edit src/App.${ext} to test live updates on your phone
+              </p>
+            </div>
+            <div className="p-3.5">
+              <p className="font-medium text-sm">\u{1F50C} Native Plugins</p>
+              <p className={\`text-xs mt-0.5 \${darkMode ? 'text-slate-400' : 'text-slate-500'}\`}>
+                Install @capacitor/camera, @capacitor/geolocation etc.
+              </p>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  )
+}
+
+export default App
+`;
   } else {
     appContent = `import { useState } from 'react'
 ${options.android ? "import { Capacitor } from '@capacitor/core'" : ""}
@@ -512,14 +716,14 @@ function App() {
   const isNative = false`}
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center justify-center p-6">
-      <h1 className="text-3xl font-bold mb-2">${options.projectName}</h1>
-      <p className="text-sm text-slate-400 mb-6">
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px', textAlign: 'center' }}>
+      <h1 style={{ fontSize: '28px', fontWeight: 'bold', marginBottom: '8px' }}>${options.projectName}</h1>
+      <p style={{ fontSize: '14px', color: '#94a3b8', marginBottom: '24px' }}>
         Platform: {platform.toUpperCase()} {isNative ? '\u2022 NATIVE' : '\u2022 WEB'}
       </p>
       <button
         onClick={() => setCount((c) => c + 1)}
-        className="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 rounded-xl font-medium text-white shadow-lg active:scale-95 transition-all"
+        style={{ padding: '10px 20px', backgroundColor: '#2563eb', color: '#fff', border: 'none', borderRadius: '12px', fontSize: '14px', fontWeight: '600', cursor: 'pointer' }}
       >
         Count: {count}
       </button>
