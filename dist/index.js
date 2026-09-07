@@ -3,7 +3,7 @@
 // src/index.ts
 import * as p2 from "@clack/prompts";
 import pc2 from "picocolors";
-import path7 from "pathe";
+import path8 from "pathe";
 
 // src/prompts/index.ts
 import * as p from "@clack/prompts";
@@ -170,7 +170,7 @@ async function runPrompts(targetDirArg) {
 }
 
 // src/generators/project.ts
-import path6 from "pathe";
+import path7 from "pathe";
 import { execa as execa2 } from "execa";
 
 // src/generators/packageJson.ts
@@ -242,7 +242,7 @@ org.gradle.java.home=/usr/lib/jvm/java-21-openjdk-amd64
 }
 
 // src/generators/files.ts
-import path5 from "pathe";
+import path6 from "pathe";
 
 // src/generators/tailwindComponents.ts
 import path4 from "pathe";
@@ -1506,6 +1506,896 @@ export default App
 `;
 }
 
+// src/generators/konstaComponents.ts
+import path5 from "pathe";
+
+// src/generators/templates/konsta/components/appNavbar.ts
+function getKonstaNavbarTemplate(isTs) {
+  return `import React from 'react'
+import { Navbar, Badge } from 'konsta/react'
+
+${isTs ? `export interface AppNavbarProps {
+  title: string
+  subtitle?: string
+  platform?: string
+  isNative?: boolean
+  darkMode?: boolean
+  onToggleTheme?: () => void
+  onOpenSidebar?: () => void
+}` : ""}
+
+export default function AppNavbar({
+  title,
+  subtitle,
+  platform = 'web',
+  isNative = false,
+  darkMode = true,
+  onToggleTheme,
+  onOpenSidebar,
+}${isTs ? ": AppNavbarProps" : ""}) {
+  return (
+    <Navbar
+      title={title}
+      subtitle={subtitle}
+      className="top-0 sticky"
+      left={
+        onOpenSidebar ? (
+          <button
+            type="button"
+            onClick={onOpenSidebar}
+            className="p-1.5 ml-2 text-slate-400 hover:text-white"
+            aria-label="Open Menu"
+          >
+            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+        ) : undefined
+      }
+      right={
+        <div className="flex items-center gap-2 pr-2">
+          {onToggleTheme && (
+            <button
+              type="button"
+              onClick={onToggleTheme}
+              className={\`p-1.5 rounded-full transition-colors \${
+                darkMode ? 'bg-slate-800 text-amber-300' : 'bg-slate-200 text-slate-700'
+              }\`}
+              aria-label="Toggle Theme"
+            >
+              {darkMode ? '\u{1F319}' : '\u2600\uFE0F'}
+            </button>
+          )}
+          <Badge colors={{ bg: isNative ? 'bg-emerald-500' : 'bg-blue-500' }}>
+            {platform.toUpperCase()}
+          </Badge>
+        </div>
+      }
+    />
+  )
+}
+`;
+}
+
+// src/generators/templates/konsta/components/tabBar.ts
+function getKonstaTabBarTemplate(isTs) {
+  return `import React from 'react'
+import { Tabbar, TabbarLink, Badge } from 'konsta/react'
+
+${isTs ? `export interface TabItem {
+  id: string
+  label: string
+  icon: React.ReactNode
+  badge?: number
+}
+
+export interface TabBarProps {
+  tabs: TabItem[]
+  activeTab: string
+  onTabChange: (id: string) => void
+}` : ""}
+
+export default function TabBar({
+  tabs,
+  activeTab,
+  onTabChange,
+}${isTs ? ": TabBarProps" : ""}) {
+  return (
+    <Tabbar className="bottom-0 fixed left-0 right-0 z-40">
+      {tabs.map((tab) => {
+        const isActive = tab.id === activeTab
+        return (
+          <TabbarLink
+            key={tab.id}
+            active={isActive}
+            onClick={() => onTabChange(tab.id)}
+            icon={
+              <div className="relative">
+                {tab.icon}
+                {Boolean(tab.badge && tab.badge > 0) && (
+                  <Badge colors={{ bg: 'bg-rose-500' }} className="absolute -top-1 -right-2 text-[9px]">
+                    {tab.badge}
+                  </Badge>
+                )}
+              </div>
+            }
+            label={tab.label}
+          />
+        )
+      })}
+    </Tabbar>
+  )
+}
+`;
+}
+
+// src/generators/templates/konsta/components/appSidebar.ts
+function getKonstaSidebarTemplate(isTs) {
+  return `import React from 'react'
+import { Panel, Block, BlockTitle, List, ListItem, Button } from 'konsta/react'
+
+${isTs ? `export interface SidebarItem {
+  id: string
+  label: string
+  icon?: string
+  onClick?: () => void
+}
+
+export interface AppSidebarProps {
+  isOpen: boolean
+  onClose: () => void
+  title?: string
+  items: SidebarItem[]
+  darkMode?: boolean
+}` : ""}
+
+export default function AppSidebar({
+  isOpen,
+  onClose,
+  title = 'Menu',
+  items,
+  darkMode = true,
+}${isTs ? ": AppSidebarProps" : ""}) {
+  return (
+    <Panel
+      side="left"
+      opened={isOpen}
+      onBackdropClick={onClose}
+      className={darkMode ? 'bg-slate-900 text-slate-100' : 'bg-white text-slate-900'}
+    >
+      <div className="flex flex-col h-full justify-between p-4 pt-8">
+        <div>
+          <BlockTitle className="text-xl font-bold">{title}</BlockTitle>
+          <List strong inset className={darkMode ? 'bg-slate-800' : 'bg-slate-100'}>
+            {items.map((item) => (
+              <ListItem
+                key={item.id}
+                title={item.label}
+                media={item.icon ? <span>{item.icon}</span> : undefined}
+                link
+                onClick={() => {
+                  item.onClick?.()
+                  onClose()
+                }}
+              />
+            ))}
+          </List>
+        </div>
+
+        <Block>
+          <Button rounded onClick={onClose}>
+            Close Menu
+          </Button>
+        </Block>
+      </div>
+    </Panel>
+  )
+}
+`;
+}
+
+// src/generators/templates/konsta/components/toast.ts
+function getKonstaToastTemplate(isTs) {
+  return `import React, { useEffect } from 'react'
+import { Toast as KonstaToast, Button } from 'konsta/react'
+
+${isTs ? `export type ToastType = 'success' | 'error' | 'warning' | 'info'
+
+export interface ToastProps {
+  opened: boolean
+  text: string
+  type?: ToastType
+  onClose: () => void
+  duration?: number
+}` : ""}
+
+export default function Toast({
+  opened,
+  text,
+  onClose,
+  duration = 3000,
+}${isTs ? ": ToastProps" : ""}) {
+  useEffect(() => {
+    if (opened && duration > 0) {
+      const timer = setTimeout(onClose, duration)
+      return () => clearTimeout(timer)
+    }
+  }, [opened, duration, onClose])
+
+  if (!opened) return null
+
+  return (
+    <KonstaToast
+      position="top"
+      opened={opened}
+      button={<Button rounded clear inline onClick={onClose}>\u2715</Button>}
+      className="z-50"
+    >
+      <div className="shrink">{text}</div>
+    </KonstaToast>
+  )
+}
+`;
+}
+
+// src/generators/templates/konsta/components/alertDialog.ts
+function getKonstaAlertDialogTemplate(isTs) {
+  return `import React from 'react'
+import { Dialog, DialogButton } from 'konsta/react'
+
+${isTs ? `export interface AlertDialogProps {
+  opened: boolean
+  title: string
+  content?: string
+  confirmText?: string
+  cancelText?: string
+  onConfirm: () => void
+  onCancel: () => void
+}` : ""}
+
+export default function AlertDialog({
+  opened,
+  title,
+  content,
+  confirmText = 'Confirm',
+  cancelText = 'Cancel',
+  onConfirm,
+  onCancel,
+}${isTs ? ": AlertDialogProps" : ""}) {
+  return (
+    <Dialog
+      opened={opened}
+      onBackdropClick={onCancel}
+      title={title}
+      content={content}
+      buttons={
+        <>
+          <DialogButton onClick={onCancel}>{cancelText}</DialogButton>
+          <DialogButton bold onClick={onConfirm}>{confirmText}</DialogButton>
+        </>
+      }
+    />
+  )
+}
+`;
+}
+
+// src/generators/templates/konsta/components/bottomSheet.ts
+function getKonstaBottomSheetTemplate(isTs) {
+  return `import React from 'react'
+import { Sheet, Block, BlockTitle, Button } from 'konsta/react'
+
+${isTs ? `export interface BottomSheetProps {
+  opened: boolean
+  onClose: () => void
+  title?: string
+  children: React.ReactNode
+  darkMode?: boolean
+}` : ""}
+
+export default function BottomSheet({
+  opened,
+  onClose,
+  title,
+  children,
+  darkMode = true,
+}${isTs ? ": BottomSheetProps" : ""}) {
+  return (
+    <Sheet
+      opened={opened}
+      onBackdropClick={onClose}
+      className={\`rounded-t-3xl pb-6 \${darkMode ? 'bg-slate-900 text-slate-100' : 'bg-white text-slate-900'}\`}
+    >
+      <div className="p-4">
+        {title && <BlockTitle className="text-center font-bold text-base mb-2">{title}</BlockTitle>}
+        <Block>{children}</Block>
+        <div className="mt-4 px-4">
+          <Button rounded onClick={onClose}>
+            Close
+          </Button>
+        </div>
+      </div>
+    </Sheet>
+  )
+}
+`;
+}
+
+// src/generators/templates/konsta/components/loadingSpinner.ts
+function getKonstaLoadingSpinnerTemplate(isTs) {
+  return `import React from 'react'
+import { Preloader } from 'konsta/react'
+
+${isTs ? `export interface LoadingSpinnerProps {
+  label?: string
+  size?: 'sm' | 'md' | 'lg'
+}` : ""}
+
+export default function LoadingSpinner({
+  label,
+}${isTs ? ": LoadingSpinnerProps" : ""}) {
+  return (
+    <div className="flex flex-col items-center justify-center gap-2 p-2">
+      <Preloader />
+      {label && <span className="text-xs text-slate-400 font-medium">{label}</span>}
+    </div>
+  )
+}
+`;
+}
+
+// src/generators/templates/konsta/components/segmentedControl.ts
+function getKonstaSegmentedTemplate(isTs) {
+  return `import React from 'react'
+import { Segmented, SegmentedButton } from 'konsta/react'
+
+${isTs ? `export interface SegmentOption {
+  value: string
+  label: string
+}
+
+export interface SegmentedControlProps {
+  options: SegmentOption[]
+  value: string
+  onChange: (val: string) => void
+}` : ""}
+
+export default function SegmentedControl({
+  options,
+  value,
+  onChange,
+}${isTs ? ": SegmentedControlProps" : ""}) {
+  return (
+    <Segmented rounded strong>
+      {options.map((opt) => (
+        <SegmentedButton
+          key={opt.value}
+          active={opt.value === value}
+          onClick={() => onChange(opt.value)}
+        >
+          {opt.label}
+        </SegmentedButton>
+      ))}
+    </Segmented>
+  )
+}
+`;
+}
+
+// src/generators/templates/konsta/views/homeView.ts
+function getKonstaHomeViewTemplate(isTs) {
+  return `import React, { useState } from 'react'
+import { Block, BlockTitle, Card, Button } from 'konsta/react'
+import SegmentedControl from '../../components/segmentedControl'
+import LoadingSpinner from '../../components/loadingSpinner'
+
+${isTs ? `export interface HomeViewProps {
+  count: number
+  onIncrement: () => void
+  onReset: () => void
+  darkMode: boolean
+  onOpenBottomSheet: () => void
+  onShowToast: (msg: string) => void
+  isLoadingAsync: boolean
+  onTriggerReload: () => void
+  isNative: boolean
+}` : ""}
+
+export default function HomeView({
+  count,
+  onIncrement,
+  onReset,
+  darkMode,
+  onOpenBottomSheet,
+  onShowToast,
+  isLoadingAsync,
+  onTriggerReload,
+  isNative,
+}${isTs ? ": HomeViewProps" : ""}) {
+  const [activeSegment, setActiveSegment] = useState${isTs ? "<string>" : ""}('overview')
+
+  return (
+    <div className="space-y-4 pb-4">
+      {/* Hero Section */}
+      <Block className="text-center pt-4">
+        <div className="inline-flex items-center justify-center p-3.5 bg-gradient-to-tr from-cyan-500/20 to-blue-600/20 border border-cyan-500/30 rounded-2xl mb-3 shadow-lg">
+          <svg className="w-10 h-10 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
+            <rect width="14" height="20" x="5" y="2" rx="2" ry="2" />
+            <path d="M12 18h.01" />
+          </svg>
+        </div>
+        <h2 className={\`text-2xl font-bold tracking-tight \${darkMode ? 'text-white' : 'text-slate-900'}\`}>
+          Konsta UI Mobile Starter
+        </h2>
+        <p className={\`text-xs mt-1 \${darkMode ? 'text-slate-400' : 'text-slate-500'}\`}>
+          Konsta UI &bull; Tailwind CSS v4 &bull; Capacitor {isNative ? 'Native' : 'Web'}
+        </p>
+      </Block>
+
+      {/* Segmented Tabs */}
+      <Block className="my-2">
+        <SegmentedControl
+          options={[
+            { value: 'overview', label: 'Overview' },
+            { value: 'counter', label: 'Counter' },
+            { value: 'async', label: 'Async Demo' },
+          ]}
+          value={activeSegment}
+          onChange={setActiveSegment}
+        />
+      </Block>
+
+      {/* Segment 1: Overview */}
+      {activeSegment === 'overview' && (
+        <Card
+          className={darkMode ? 'bg-slate-900 border border-slate-800' : 'bg-white border border-slate-200 shadow-sm'}
+          margin="m-4"
+        >
+          <div className="p-2 space-y-3">
+            <h3 className="font-semibold text-sm">Pixel-Perfect Native UI</h3>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              Konsta UI automatically adapts styles to iOS and Material Design while integrating smoothly with Tailwind CSS v4.
+            </p>
+            <div className="grid grid-cols-2 gap-2 pt-1">
+              <Button rounded onClick={onOpenBottomSheet}>
+                Open Sheet Modal
+              </Button>
+              <Button rounded clear onClick={() => onShowToast('Toast notification triggered!')}>
+                Show Toast
+              </Button>
+            </div>
+          </div>
+        </Card>
+      )}
+
+      {/* Segment 2: Interactive Counter */}
+      {activeSegment === 'counter' && (
+        <Card
+          className={darkMode ? 'bg-slate-900 border border-slate-800' : 'bg-white border border-slate-200 shadow-sm'}
+          margin="m-4"
+        >
+          <div className="flex items-center justify-between p-2">
+            <div>
+              <p className={\`font-semibold text-sm \${darkMode ? 'text-slate-100' : 'text-slate-900'}\`}>
+                State Counter
+              </p>
+              <p className={\`text-xs \${darkMode ? 'text-slate-400' : 'text-slate-500'}\`}>
+                Taps: {count}
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <Button rounded onClick={onIncrement}>
+                Increment ({count})
+              </Button>
+              {count > 0 && (
+                <Button rounded clear colors={{ text: 'text-rose-500' }} onClick={onReset}>
+                  Reset
+                </Button>
+              )}
+            </div>
+          </div>
+        </Card>
+      )}
+
+      {/* Segment 3: Async & Preloader */}
+      {activeSegment === 'async' && (
+        <Card
+          className={darkMode ? 'bg-slate-900 border border-slate-800' : 'bg-white border border-slate-200 shadow-sm'}
+          margin="m-4"
+        >
+          <div className="p-2 space-y-3 text-center">
+            <h3 className="font-semibold text-sm">Async Preloader Demo</h3>
+            {isLoadingAsync ? (
+              <div className="py-4">
+                <LoadingSpinner label="Fetching device data\u2026" />
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <p className="text-xs text-slate-400">
+                  Tap below to test async loading state with Konsta Preloader.
+                </p>
+                <Button rounded onClick={onTriggerReload}>
+                  Trigger Async Load
+                </Button>
+              </div>
+            )}
+          </div>
+        </Card>
+      )}
+    </div>
+  )
+}
+`;
+}
+
+// src/generators/templates/konsta/views/controlsView.ts
+function getKonstaControlsViewTemplate(isTs) {
+  return `import React from 'react'
+import { BlockTitle, List, ListItem, Toggle, Button, Block } from 'konsta/react'
+
+${isTs ? `export interface ControlsViewProps {
+  darkMode: boolean
+  onToggleDarkMode: () => void
+  hapticsEnabled: boolean
+  onToggleHaptics: () => void
+  onOpenBottomSheet: () => void
+  onOpenAlert: () => void
+  platform: string
+  isNative: boolean
+}` : ""}
+
+export default function ControlsView({
+  darkMode,
+  onToggleDarkMode,
+  hapticsEnabled,
+  onToggleHaptics,
+  onOpenBottomSheet,
+  onOpenAlert,
+  platform,
+  isNative,
+}${isTs ? ": ControlsViewProps" : ""}) {
+  return (
+    <div className="space-y-4 pb-4">
+      <BlockTitle className={darkMode ? 'text-slate-400' : 'text-slate-600'}>
+        Device & App Settings
+      </BlockTitle>
+      <List
+        strong
+        inset
+        className={darkMode ? 'bg-slate-900 border border-slate-800' : 'bg-white border border-slate-200'}
+      >
+        <ListItem
+          title="Platform"
+          after={platform.toUpperCase()}
+          text={isNative ? 'Running on physical device' : 'Running in browser'}
+        />
+        <ListItem
+          title="Dark Mode"
+          text={darkMode ? 'Pure Dark theme active' : 'Clean Light theme active'}
+          onClick={onToggleDarkMode}
+          link
+          after={<Toggle checked={darkMode} onChange={onToggleDarkMode} />}
+        />
+        <ListItem
+          title="Haptics Feedback"
+          text={hapticsEnabled ? 'Vibration enabled' : 'Disabled'}
+          onClick={onToggleHaptics}
+          link
+          after={<Toggle checked={hapticsEnabled} onChange={onToggleHaptics} />}
+        />
+      </List>
+
+      <BlockTitle className={darkMode ? 'text-slate-400' : 'text-slate-600'}>
+        Modals & Overlays
+      </BlockTitle>
+      <Block className="grid grid-cols-2 gap-2">
+        <Button rounded onClick={onOpenBottomSheet}>
+          Open Sheet
+        </Button>
+        <Button rounded clear colors={{ text: 'text-rose-500' }} onClick={onOpenAlert}>
+          Show Dialog
+        </Button>
+      </Block>
+    </div>
+  )
+}
+`;
+}
+
+// src/generators/templates/konsta/views/overlaysView.ts
+function getKonstaOverlaysViewTemplate(isTs) {
+  return `import React from 'react'
+import { Block, BlockTitle, Button } from 'konsta/react'
+
+${isTs ? `export interface OverlaysViewProps {
+  onShowToast: (msg: string) => void
+  onOpenBottomSheet: () => void
+  onOpenAlert: () => void
+  darkMode: boolean
+}` : ""}
+
+export default function OverlaysView({
+  onShowToast,
+  onOpenBottomSheet,
+  onOpenAlert,
+  darkMode,
+}${isTs ? ": OverlaysViewProps" : ""}) {
+  return (
+    <div className="space-y-4 pb-4">
+      <BlockTitle className={darkMode ? 'text-slate-400' : 'text-slate-600'}>
+        Toast Notifications
+      </BlockTitle>
+      <Block className="grid grid-cols-2 gap-2">
+        <Button rounded onClick={() => onShowToast('Operation completed successfully!')}>
+          Success Toast
+        </Button>
+        <Button rounded clear colors={{ text: 'text-amber-500' }} onClick={() => onShowToast('Warning: Check connection')}>
+          Warning Toast
+        </Button>
+      </Block>
+
+      <BlockTitle className={darkMode ? 'text-slate-400' : 'text-slate-600'}>
+        Modal Dialogs & Sheets
+      </BlockTitle>
+      <Block className="grid grid-cols-2 gap-2">
+        <Button rounded onClick={onOpenBottomSheet}>
+          Bottom Sheet
+        </Button>
+        <Button rounded clear colors={{ text: 'text-rose-500' }} onClick={onOpenAlert}>
+          Alert Dialog
+        </Button>
+      </Block>
+    </div>
+  )
+}
+`;
+}
+
+// src/generators/konstaComponents.ts
+async function generateKonstaComponents(targetDir, options) {
+  const isTs = options.language === "ts";
+  const ext = isTs ? "tsx" : "jsx";
+  const indexExt = isTs ? "ts" : "js";
+  async function writeComponent(folderName, componentName, code) {
+    const componentDir = path5.join(targetDir, "src", "components", folderName);
+    await writeFile(path5.join(componentDir, `${componentName}.${ext}`), code);
+    await writeFile(
+      path5.join(componentDir, `index.${indexExt}`),
+      `export { default } from './${componentName}'
+`
+    );
+  }
+  async function writeView(folderName, viewName, code) {
+    const viewDir = path5.join(targetDir, "src", "views", folderName);
+    await writeFile(path5.join(viewDir, `${viewName}.${ext}`), code);
+    await writeFile(
+      path5.join(viewDir, `index.${indexExt}`),
+      `export { default } from './${viewName}'
+`
+    );
+  }
+  await writeComponent("appNavbar", "AppNavbar", getKonstaNavbarTemplate(isTs));
+  await writeComponent("tabBar", "TabBar", getKonstaTabBarTemplate(isTs));
+  await writeComponent("appSidebar", "AppSidebar", getKonstaSidebarTemplate(isTs));
+  await writeComponent("toast", "Toast", getKonstaToastTemplate(isTs));
+  await writeComponent("alertDialog", "AlertDialog", getKonstaAlertDialogTemplate(isTs));
+  await writeComponent("bottomSheet", "BottomSheet", getKonstaBottomSheetTemplate(isTs));
+  await writeComponent("loadingSpinner", "LoadingSpinner", getKonstaLoadingSpinnerTemplate(isTs));
+  await writeComponent("segmentedControl", "SegmentedControl", getKonstaSegmentedTemplate(isTs));
+  await writeView("homeView", "HomeView", getKonstaHomeViewTemplate(isTs));
+  await writeView("controlsView", "ControlsView", getKonstaControlsViewTemplate(isTs));
+  await writeView("overlaysView", "OverlaysView", getKonstaOverlaysViewTemplate(isTs));
+}
+
+// src/generators/templates/konsta/app.ts
+function getKonstaAppTemplate(options, isTs) {
+  return `import { useState, useEffect } from 'react'
+${options.android ? "import { Capacitor } from '@capacitor/core'" : ""}
+import { App as KonstaApp, Page } from 'konsta/react'
+import AppNavbar from './components/appNavbar'
+import TabBar from './components/tabBar'
+import AppSidebar from './components/appSidebar'
+import Toast from './components/toast'
+import AlertDialog from './components/alertDialog'
+import BottomSheet from './components/bottomSheet'
+import HomeView from './views/homeView'
+import ControlsView from './views/controlsView'
+import OverlaysView from './views/overlaysView'
+
+function App() {
+  const [activeTab, setActiveTab] = useState${isTs ? "<string>" : ""}('home')
+  const [count, setCount] = useState${isTs ? "<number>" : ""}(0)
+  const [darkMode, setDarkMode] = useState${isTs ? "<boolean>" : ""}(true)
+  const [hapticsEnabled, setHapticsEnabled] = useState${isTs ? "<boolean>" : ""}(true)
+  const [isSidebarOpen, setIsSidebarOpen] = useState${isTs ? "<boolean>" : ""}(false)
+  const [isBottomSheetOpen, setIsBottomSheetOpen] = useState${isTs ? "<boolean>" : ""}(false)
+  const [isAlertOpen, setIsAlertOpen] = useState${isTs ? "<boolean>" : ""}(false)
+  const [toastText, setToastText] = useState${isTs ? "<string>" : ""}('')
+  const [isToastOpen, setIsToastOpen] = useState${isTs ? "<boolean>" : ""}(false)
+  const [isLoadingAsync, setIsLoadingAsync] = useState${isTs ? "<boolean>" : ""}(false)
+
+  ${options.android ? `const platform = Capacitor.getPlatform()
+  const isNative = Capacitor.isNativePlatform()
+  const theme = platform === 'ios' ? 'ios' : 'material'` : `const platform = 'web'
+  const isNative = false
+  const theme = 'material'`}
+
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add('dark', 'k-dark')
+    } else {
+      document.documentElement.classList.remove('dark', 'k-dark')
+    }
+  }, [darkMode])
+
+  const showToast = (text${isTs ? ": string" : ""}) => {
+    setToastText(text)
+    setIsToastOpen(true)
+  }
+
+  const handleRefresh = async () => {
+    setIsLoadingAsync(true)
+    await new Promise((resolve) => setTimeout(resolve, 1500))
+    setIsLoadingAsync(false)
+    showToast('Data refreshed successfully!')
+  }
+
+  const tabs = [
+    {
+      id: 'home',
+      label: 'Home',
+      icon: (
+        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l9-9 9 9M5 10v10a1 1 0 001 1h3a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1h3a1 1 0 001-1V10" />
+        </svg>
+      ),
+    },
+    {
+      id: 'controls',
+      label: 'Controls',
+      icon: (
+        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+        </svg>
+      ),
+      badge: 1,
+    },
+    {
+      id: 'overlays',
+      label: 'Overlays',
+      icon: (
+        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V6z" />
+        </svg>
+      ),
+    },
+  ]
+
+  const sidebarItems = [
+    { id: '1', label: 'Home View', icon: '\u{1F3E0}', onClick: () => setActiveTab('home') },
+    { id: '2', label: 'Controls View', icon: '\u2699\uFE0F', onClick: () => setActiveTab('controls') },
+    { id: '3', label: 'Overlays View', icon: '\u{1F4F1}', onClick: () => setActiveTab('overlays') },
+  ]
+
+  return (
+    <div className={darkMode ? 'dark k-dark' : ''}>
+      <KonstaApp theme={theme} dark={darkMode} safeAreas className={darkMode ? 'dark k-dark' : ''}>
+        <Page className={darkMode ? 'bg-slate-950 text-slate-100' : 'bg-slate-100 text-slate-900'}>
+          {/* Toast Notification */}
+          <Toast
+            opened={isToastOpen}
+            text={toastText}
+            onClose={() => setIsToastOpen(false)}
+          />
+
+          {/* Sidebar Drawer Panel */}
+          <AppSidebar
+            isOpen={isSidebarOpen}
+            onClose={() => setIsSidebarOpen(false)}
+            title="CapKit Menu"
+            items={sidebarItems}
+            darkMode={darkMode}
+          />
+
+          {/* Alert Dialog */}
+          <AlertDialog
+            opened={isAlertOpen}
+            title="Reset Counter"
+            content="Are you sure you want to reset your taps count to 0?"
+            confirmText="Reset"
+            cancelText="Cancel"
+            onConfirm={() => {
+              setCount(0)
+              setIsAlertOpen(false)
+              showToast('Counter reset to 0')
+            }}
+            onCancel={() => setIsAlertOpen(false)}
+          />
+
+          {/* Bottom Sheet Modal */}
+          <BottomSheet
+            opened={isBottomSheetOpen}
+            onClose={() => setIsBottomSheetOpen(false)}
+            title="Konsta UI Components"
+            darkMode={darkMode}
+          >
+            <p className="text-xs text-slate-400 text-center py-2">
+              Konsta UI Sheet modal with native animations and safe-area margins.
+            </p>
+          </BottomSheet>
+
+          {/* Top Navbar */}
+          <AppNavbar
+            title="${options.projectName}"
+            subtitle="Konsta UI + Tailwind"
+            platform={platform}
+            isNative={isNative}
+            darkMode={darkMode}
+            onToggleTheme={() => setDarkMode(!darkMode)}
+            onOpenSidebar={() => setIsSidebarOpen(true)}
+          />
+
+          {/* Tab Views */}
+          <main className="max-w-md mx-auto pb-20 pt-2 px-2">
+            {activeTab === 'home' && (
+              <HomeView
+                count={count}
+                onIncrement={() => {
+                  setCount((c) => c + 1)
+                  if ((count + 1) % 5 === 0) showToast(\`Reached \${count + 1} taps! \u{1F389}\`)
+                }}
+                onReset={() => setIsAlertOpen(true)}
+                darkMode={darkMode}
+                onOpenBottomSheet={() => setIsBottomSheetOpen(true)}
+                onShowToast={showToast}
+                isLoadingAsync={isLoadingAsync}
+                onTriggerReload={handleRefresh}
+                isNative={isNative}
+              />
+            )}
+
+            {activeTab === 'controls' && (
+              <ControlsView
+                darkMode={darkMode}
+                onToggleDarkMode={() => setDarkMode(!darkMode)}
+                hapticsEnabled={hapticsEnabled}
+                onToggleHaptics={() => {
+                  setHapticsEnabled(!hapticsEnabled)
+                  showToast(!hapticsEnabled ? 'Haptics enabled' : 'Haptics disabled')
+                }}
+                onOpenBottomSheet={() => setIsBottomSheetOpen(true)}
+                onOpenAlert={() => setIsAlertOpen(true)}
+                platform={platform}
+                isNative={isNative}
+              />
+            )}
+
+            {activeTab === 'overlays' && (
+              <OverlaysView
+                onShowToast={showToast}
+                onOpenBottomSheet={() => setIsBottomSheetOpen(true)}
+                onOpenAlert={() => setIsAlertOpen(true)}
+                darkMode={darkMode}
+              />
+            )}
+          </main>
+
+          {/* Bottom Tab Bar */}
+          <TabBar
+            tabs={tabs}
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+          />
+        </Page>
+      </KonstaApp>
+    </div>
+  )
+}
+
+export default App
+`;
+}
+
 // src/generators/files.ts
 async function generateProjectFiles(targetDir, options) {
   const isTs = options.language === "ts";
@@ -1524,7 +2414,7 @@ async function generateProjectFiles(targetDir, options) {
   </body>
 </html>
 `;
-  await writeFile(path5.join(targetDir, "index.html"), indexHtml);
+  await writeFile(path6.join(targetDir, "index.html"), indexHtml);
   let viteConfig = "";
   if (options.tailwind) {
     viteConfig = `import tailwindcss from '@tailwindcss/vite'
@@ -1552,7 +2442,7 @@ export default defineConfig({
 })
 `;
   }
-  await writeFile(path5.join(targetDir, `vite.config.${configExt}`), viteConfig);
+  await writeFile(path6.join(targetDir, `vite.config.${configExt}`), viteConfig);
   const mainContent = `import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
@@ -1564,7 +2454,7 @@ createRoot(document.getElementById('root')${isTs ? "!" : ""}).render(
   </StrictMode>,
 )
 `;
-  await writeFile(path5.join(targetDir, "src", `main.${ext}`), mainContent);
+  await writeFile(path6.join(targetDir, "src", `main.${ext}`), mainContent);
   let indexCss = "";
   if (options.tailwind && options.konsta) {
     indexCss = `@import "tailwindcss";
@@ -1625,146 +2515,11 @@ body {
 }
 `;
   }
-  await writeFile(path5.join(targetDir, "src", "index.css"), indexCss);
+  await writeFile(path6.join(targetDir, "src", "index.css"), indexCss);
   let appContent = "";
   if (options.konsta) {
-    appContent = `import { useState, useEffect } from 'react'
-${options.android ? "import { Capacitor } from '@capacitor/core'" : ""}
-import {
-  App as KonstaApp,
-  Page,
-  Navbar,
-  Block,
-  BlockTitle,
-  Card,
-  Button,
-  List,
-  ListItem,
-  Badge,
-  Toggle,
-} from 'konsta/react'
-
-function App() {
-  const [count, setCount] = useState${isTs ? "<number>" : ""}(0)
-  const [darkMode, setDarkMode] = useState${isTs ? "<boolean>" : ""}(true)
-  const [hapticsEnabled, setHapticsEnabled] = useState${isTs ? "<boolean>" : ""}(true)
-
-  ${options.android ? `const platform = Capacitor.getPlatform()
-  const isNative = Capacitor.isNativePlatform()
-  const theme = platform === 'ios' ? 'ios' : 'material'` : `const platform = 'web'
-  const isNative = false
-  const theme = 'material'`}
-
-  useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add('dark', 'k-dark')
-    } else {
-      document.documentElement.classList.remove('dark', 'k-dark')
-    }
-  }, [darkMode])
-
-  return (
-    <div className={darkMode ? 'dark k-dark' : ''}>
-      <KonstaApp theme={theme} dark={darkMode} safeAreas className={darkMode ? 'dark k-dark' : ''}>
-        <Page className={darkMode ? 'bg-slate-950 text-slate-100' : 'bg-slate-100 text-slate-900'}>
-          <Navbar
-            title="${options.projectName}"
-            subtitle="Capacitor + Konsta"
-            className="top-0 sticky"
-            right={
-              <div className="flex items-center gap-2 pr-2">
-                <button
-                  type="button"
-                  onClick={() => setDarkMode(!darkMode)}
-                  className="p-1.5 rounded-full bg-slate-800 text-amber-300"
-                  aria-label="Toggle Theme"
-                >
-                  {darkMode ? '\u{1F319}' : '\u2600\uFE0F'}
-                </button>
-                <Badge colors={{ bg: isNative ? 'bg-emerald-500' : 'bg-blue-500' }}>
-                  {platform.toUpperCase()}
-                </Badge>
-              </div>
-            }
-          />
-
-          <Block className="text-center pt-4">
-            <h1 className={\`text-2xl font-bold tracking-tight \${darkMode ? 'text-white' : 'text-slate-900'}\`}>
-              ${options.projectName}
-            </h1>
-            <p className={\`text-xs mt-1 \${darkMode ? 'text-slate-400' : 'text-slate-500'}\`}>
-              Konsta UI \u2022 Tailwind CSS v4 \u2022 Capacitor {isNative ? 'Native' : 'Web'}
-            </p>
-          </Block>
-
-          <BlockTitle className={darkMode ? 'text-slate-400' : 'text-slate-600'}>
-            Interactive State & HMR
-          </BlockTitle>
-          <Card
-            className={darkMode ? 'bg-slate-900 border border-slate-800' : 'bg-white border border-slate-200 shadow-sm'}
-            margin="m-4"
-          >
-            <div className="flex items-center justify-between p-2">
-              <div>
-                <p className={\`font-semibold text-sm \${darkMode ? 'text-slate-100' : 'text-slate-900'}\`}>
-                  State Counter
-                </p>
-                <p className={\`text-xs \${darkMode ? 'text-slate-400' : 'text-slate-500'}\`}>
-                  Taps: {count}
-                </p>
-              </div>
-              <Button rounded className="w-auto px-4" onClick={() => setCount((c) => c + 1)}>
-                Increment ({count})
-              </Button>
-            </div>
-          </Card>
-
-          <BlockTitle className={darkMode ? 'text-slate-400' : 'text-slate-600'}>
-            Device & App Settings
-          </BlockTitle>
-          <List
-            strong
-            inset
-            className={darkMode ? 'bg-slate-900 border border-slate-800' : 'bg-white border border-slate-200'}
-          >
-            <ListItem
-              title="Platform"
-              after={platform.toUpperCase()}
-              text={isNative ? 'Running on physical device' : 'Running in browser'}
-            />
-            <ListItem
-              title="Dark Mode"
-              text={darkMode ? 'Pure Dark theme active' : 'Clean Light theme active'}
-              onClick={() => setDarkMode(!darkMode)}
-              link
-              after={
-                <Toggle
-                  checked={darkMode}
-                  onChange={(e${isTs ? ": React.ChangeEvent<HTMLInputElement>" : ""}) => setDarkMode(e.target.checked)}
-                />
-              }
-            />
-            <ListItem
-              title="Haptics Feedback"
-              text={hapticsEnabled ? 'Vibration enabled' : 'Disabled'}
-              onClick={() => setHapticsEnabled(!hapticsEnabled)}
-              link
-              after={
-                <Toggle
-                  checked={hapticsEnabled}
-                  onChange={(e${isTs ? ": React.ChangeEvent<HTMLInputElement>" : ""}) => setHapticsEnabled(e.target.checked)}
-                />
-              }
-            />
-          </List>
-        </Page>
-      </KonstaApp>
-    </div>
-  )
-}
-
-export default App
-`;
+    await generateKonstaComponents(targetDir, options);
+    appContent = getKonstaAppTemplate(options, isTs);
   } else if (options.tailwind) {
     await generateTailwindComponents(targetDir, options);
     appContent = getAppTemplate(options, isTs);
@@ -1797,7 +2552,7 @@ function App() {
 export default App
 `;
   }
-  await writeFile(path5.join(targetDir, "src", `App.${ext}`), appContent);
+  await writeFile(path6.join(targetDir, "src", `App.${ext}`), appContent);
   if (isTs) {
     const tsconfig = {
       files: [],
@@ -1806,7 +2561,7 @@ export default App
         { path: "./tsconfig.node.json" }
       ]
     };
-    await writeJson(path5.join(targetDir, "tsconfig.json"), tsconfig);
+    await writeJson(path6.join(targetDir, "tsconfig.json"), tsconfig);
     const tsconfigApp = {
       compilerOptions: {
         tsBuildInfoFile: "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
@@ -1829,7 +2584,7 @@ export default App
       },
       include: ["src"]
     };
-    await writeJson(path5.join(targetDir, "tsconfig.app.json"), tsconfigApp);
+    await writeJson(path6.join(targetDir, "tsconfig.app.json"), tsconfigApp);
     const tsconfigNode = {
       compilerOptions: {
         tsBuildInfoFile: "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
@@ -1850,7 +2605,7 @@ export default App
       },
       include: ["vite.config.ts"]
     };
-    await writeJson(path5.join(targetDir, "tsconfig.node.json"), tsconfigNode);
+    await writeJson(path6.join(targetDir, "tsconfig.node.json"), tsconfigNode);
   }
   const gitignore = `node_modules
 dist
@@ -1858,7 +2613,7 @@ dist-ssr
 *.local
 .DS_Store
 `;
-  await writeFile(path5.join(targetDir, ".gitignore"), gitignore);
+  await writeFile(path6.join(targetDir, ".gitignore"), gitignore);
   const readmeContent = `# ${options.projectName}
 
 Scaffolded with **[CapKit](https://github.com/w15147m/capkit)** \u2014 Interactive Capacitor starter kit.
@@ -1941,7 +2696,7 @@ When you are ready to build a standalone offline release APK:
    \`\`\`
 ` : ""}
 `;
-  await writeFile(path5.join(targetDir, "README.md"), readmeContent);
+  await writeFile(path6.join(targetDir, "README.md"), readmeContent);
 }
 
 // src/generators/project.ts
@@ -1949,12 +2704,12 @@ async function generateProject(options) {
   const targetDir = options.targetDir;
   await ensureDir(targetDir);
   const packageJson = generatePackageJson(options);
-  await writeJson(path6.join(targetDir, "package.json"), packageJson);
+  await writeJson(path7.join(targetDir, "package.json"), packageJson);
   await generateProjectFiles(targetDir, options);
   if (options.android) {
-    await ensureDir(path6.join(targetDir, "dist"));
+    await ensureDir(path7.join(targetDir, "dist"));
     await writeFile(
-      path6.join(targetDir, "dist", "index.html"),
+      path7.join(targetDir, "dist", "index.html"),
       "<!doctype html><html><body></body></html>"
     );
     await generateCapacitorConfig(targetDir, options);
@@ -1991,7 +2746,7 @@ async function main() {
     installSpinner.stop("Dependencies installed!");
   }
   const isCurrentDir = options.targetDir === process.cwd();
-  const relativeDir = isCurrentDir ? "" : path7.relative(process.cwd(), options.targetDir);
+  const relativeDir = isCurrentDir ? "" : path8.relative(process.cwd(), options.targetDir);
   p2.note(
     [
       relativeDir ? pc2.cyan(`cd ${relativeDir}`) : "",
