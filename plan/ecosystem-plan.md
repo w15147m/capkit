@@ -49,7 +49,39 @@ CLI prompts can allow developers to multi-select essential native device capabil
 
 ---
 
-## 4. 🔀 Navigation & Routing
+## 4. 🧩 Reusable Mobile Components System
+
+Every scaffolded template can include a clean, production-ready set of reusable mobile components adhering to the project structure guidelines:
+
+### A. Core Layout Components
+- **`appHeader/` (Navbar)**:
+  - Sticky glassmorphic top bar with safe-area padding (`env(safe-area-inset-top)`).
+  - Title, subtitle, leading back button, trailing action buttons, and dark/light mode toggle.
+- **`tabBar/` / `appFooter/` (Bottom Navigation)**:
+  - Mobile bottom tab bar with safe-area padding (`env(safe-area-inset-bottom)`).
+  - Active indicators, icon + label tabs, and notification count badges.
+- **`appSidebar/` / `drawer/`**:
+  - Smooth slide-in side drawer navigation with touch backdrop.
+
+### B. Feedback & Overlay Components
+- **`toast/` (Toast / Snackbar)**:
+  - Global toast notification queue with variants: `success`, `error`, `warning`, `info`.
+  - Auto-dismiss timer, progress bar, and touch swipe-to-dismiss.
+- **`alertDialog/` / `modal/`**:
+  - Mobile alert and confirmation popups with iOS & Material Design styled action buttons.
+- **`bottomSheet/` / `actionSheet/`**:
+  - Draggable bottom sheet modal with snap points and handle bar for mobile menus.
+- **`loadingSpinner/` & `skeleton/`**:
+  - Smooth animated skeletons and native-styled activity spinners for asynchronous data loading.
+
+### C. Interactive Mobile Controls
+- **`segmentedControl/`**: Pill/slider toggle tabs for sub-views.
+- **`pullToRefresh/`**: Native mobile pull-down gesture to trigger data refresh.
+- **`toggleSwitch/` & `badge/`**: Standard mobile switch and chip indicators.
+
+---
+
+## 5. 🔀 Navigation & Routing
 
 | Router | Best For | Features |
 |---|---|---|
@@ -59,7 +91,7 @@ CLI prompts can allow developers to multi-select essential native device capabil
 
 ---
 
-## 5. 📦 State Management & Data Fetching
+## 6. 📦 State Management & Data Fetching
 
 | Library | Category | Description |
 |---|---|---|
@@ -69,7 +101,7 @@ CLI prompts can allow developers to multi-select essential native device capabil
 
 ---
 
-## 6. ✨ Icons & Animation Packs
+## 7. ✨ Icons & Animation Packs
 
 - **Lucide React**: Clean, modern SVG icon set for mobile interfaces.
 - **Ionicons**: iOS & Material Design styled icon set matching mobile standards.
@@ -77,7 +109,7 @@ CLI prompts can allow developers to multi-select essential native device capabil
 
 ---
 
-## 7. 🚀 Multi-Framework Support Roadmap
+## 8. 🚀 Multi-Framework Support Roadmap
 
 - **Phase 1 (Current)**: React 19 (TypeScript / JavaScript)
 - **Phase 2**: Vue 3 (Vite + Vue + Pinia / Ionic Vue)
@@ -86,15 +118,17 @@ CLI prompts can allow developers to multi-select essential native device capabil
 
 ---
 
-## 8. 🛠️ CLI Architecture Implementation Strategy
+## 9. 🛠️ CLI Architecture Implementation Strategy
 
 1. **Option Groups**:
    - `Framework` → React (future: Vue, Svelte, Solid)
    - `Language` → TypeScript / JavaScript
    - `Styling` → Tailwind CSS v4, SCSS, CSS Modules, Bootstrap, Vanilla CSS
    - `UI Library` → (Filtered based on styling selection): Konsta UI, Ionic, DaisyUI, shadcn/ui, None
+   - `Component Pack` → Layout (Header/Footer/Sidebar), Overlays (Toasts/Alerts/Sheets)
    - `Plugins` → Multi-select Capacitor plugins with auto-configured Android permissions in `AndroidManifest.xml`
 2. **Template Generators**:
    - Dynamic `package.json` dependency resolution.
    - Modular file generation per UI library and plugin combination.
    - Dynamic `README.md` documenting selected plugins and usage examples.
+
