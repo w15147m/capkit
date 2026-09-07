@@ -3,7 +3,7 @@
   "appName": "my-capacitor-app",
   "webDir": "dist",
   "server": {
-    "url": "http://YOUR_LOCAL_IP:5173",
+    "url": "http://localhost:5173",
     "cleartext": true
   }
 }
