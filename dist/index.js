@@ -3,7 +3,7 @@
 // src/index.ts
 import * as p2 from "@clack/prompts";
 import pc2 from "picocolors";
-import path6 from "pathe";
+import path7 from "pathe";
 
 // src/prompts/index.ts
 import * as p from "@clack/prompts";
@@ -170,7 +170,7 @@ async function runPrompts(targetDirArg) {
 }
 
 // src/generators/project.ts
-import path5 from "pathe";
+import path6 from "pathe";
 import { execa as execa2 } from "execa";
 
 // src/generators/packageJson.ts
@@ -242,7 +242,677 @@ org.gradle.java.home=/usr/lib/jvm/java-21-openjdk-amd64
 }
 
 // src/generators/files.ts
+import path5 from "pathe";
+
+// src/generators/tailwindComponents.ts
 import path4 from "pathe";
+async function generateTailwindComponents(targetDir, options) {
+  const isTs = options.language === "ts";
+  const ext = isTs ? "tsx" : "jsx";
+  const indexExt = isTs ? "ts" : "js";
+  async function writeComponent(folderName, componentName, code) {
+    const componentDir = path4.join(targetDir, "src", "components", folderName);
+    await writeFile(path4.join(componentDir, `${componentName}.${ext}`), code);
+    await writeFile(
+      path4.join(componentDir, `index.${indexExt}`),
+      `export { default } from './${componentName}'
+`
+    );
+  }
+  const appHeaderCode = `import React from 'react'
+
+${isTs ? `export interface AppHeaderProps {
+  title: string
+  subtitle?: string
+  platform?: string
+  isNative?: boolean
+  darkMode?: boolean
+  onToggleTheme?: () => void
+  onOpenSidebar?: () => void
+}` : ""}
+
+export default function AppHeader({
+  title,
+  subtitle,
+  platform = 'web',
+  isNative = false,
+  darkMode = true,
+  onToggleTheme,
+  onOpenSidebar,
+}${isTs ? ": AppHeaderProps" : ""}) {
+  return (
+    <header
+      className={\`sticky top-0 z-40 border-b backdrop-blur-md transition-colors px-4 py-3 pt-[calc(0.75rem+env(safe-area-inset-top,0px))] \${
+        darkMode ? 'bg-slate-950/85 border-slate-800/80 text-slate-100' : 'bg-white/85 border-slate-200/80 text-slate-900'
+      }\`}
+    >
+      <div className="max-w-md mx-auto flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2.5">
+          {onOpenSidebar && (
+            <button
+              type="button"
+              onClick={onOpenSidebar}
+              className={\`p-1.5 rounded-xl border transition-colors \${
+                darkMode ? 'bg-slate-900 border-slate-800 text-slate-300 hover:bg-slate-800' : 'bg-slate-100 border-slate-200 text-slate-700 hover:bg-slate-200'
+              }\`}
+              aria-label="Open Sidebar"
+            >
+              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+          )}
+          <div>
+            <h1 className="text-base font-bold tracking-tight leading-none">{title}</h1>
+            {subtitle && <p className="text-[11px] text-slate-400 mt-0.5 leading-none">{subtitle}</p>}
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {onToggleTheme && (
+            <button
+              type="button"
+              onClick={onToggleTheme}
+              className={\`p-1.5 rounded-full transition-colors \${
+                darkMode ? 'bg-slate-800 text-amber-300' : 'bg-slate-200 text-slate-700'
+              }\`}
+              aria-label="Toggle Theme"
+            >
+              {darkMode ? '\u{1F319}' : '\u2600\uFE0F'}
+            </button>
+          )}
+          <span
+            className={\`text-[10px] font-bold px-2 py-0.5 rounded-full text-white tracking-wider \${
+              isNative ? 'bg-emerald-600' : 'bg-blue-600'
+            }\`}
+          >
+            {platform.toUpperCase()}
+          </span>
+        </div>
+      </div>
+    </header>
+  )
+}
+`;
+  await writeComponent("appHeader", "AppHeader", appHeaderCode);
+  const tabBarCode = `import React from 'react'
+
+${isTs ? `export interface TabItem {
+  id: string
+  label: string
+  icon: React.ReactNode
+  badge?: number
+}
+
+export interface TabBarProps {
+  tabs: TabItem[]
+  activeTab: string
+  onTabChange: (id: string) => void
+  darkMode?: boolean
+}` : ""}
+
+export default function TabBar({
+  tabs,
+  activeTab,
+  onTabChange,
+  darkMode = true,
+}${isTs ? ": TabBarProps" : ""}) {
+  return (
+    <nav
+      className={\`fixed bottom-0 left-0 right-0 z-40 border-t backdrop-blur-md transition-colors pb-[calc(0.5rem+env(safe-area-inset-bottom,0px))] pt-2 px-2 \${
+        darkMode ? 'bg-slate-950/90 border-slate-800/80 text-slate-400' : 'bg-white/90 border-slate-200/80 text-slate-500'
+      }\`}
+    >
+      <div className="max-w-md mx-auto grid grid-flow-col auto-cols-fr items-center">
+        {tabs.map((tab) => {
+          const isActive = tab.id === activeTab
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => onTabChange(tab.id)}
+              className={\`flex flex-col items-center justify-center py-1 relative transition-all active:scale-95 \${
+                isActive
+                  ? darkMode
+                    ? 'text-cyan-400 font-semibold'
+                    : 'text-blue-600 font-semibold'
+                  : 'hover:text-slate-200'
+              }\`}
+            >
+              <div className="relative">
+                <div className="w-5 h-5 flex items-center justify-center">{tab.icon}</div>
+                {Boolean(tab.badge && tab.badge > 0) && (
+                  <span className="absolute -top-1 -right-2 bg-rose-500 text-white text-[9px] font-bold px-1.5 py-0.2 rounded-full min-w-[14px] text-center">
+                    {tab.badge}
+                  </span>
+                )}
+              </div>
+              <span className="text-[11px] mt-1 tracking-tight">{tab.label}</span>
+            </button>
+          )
+        })}
+      </div>
+    </nav>
+  )
+}
+`;
+  await writeComponent("tabBar", "TabBar", tabBarCode);
+  const appSidebarCode = `import React from 'react'
+
+${isTs ? `export interface SidebarItem {
+  id: string
+  label: string
+  icon?: React.ReactNode
+  onClick?: () => void
+}
+
+export interface AppSidebarProps {
+  isOpen: boolean
+  onClose: () => void
+  title?: string
+  items: SidebarItem[]
+  darkMode?: boolean
+}` : ""}
+
+export default function AppSidebar({
+  isOpen,
+  onClose,
+  title = 'Menu',
+  items,
+  darkMode = true,
+}${isTs ? ": AppSidebarProps" : ""}) {
+  if (!isOpen) return null
+
+  return (
+    <div className="fixed inset-0 z-50 flex">
+      {/* Backdrop */}
+      <div
+        className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity animate-in fade-in"
+        onClick={onClose}
+      />
+
+      {/* Drawer Panel */}
+      <div
+        className={\`relative w-72 max-w-[80vw] h-full shadow-2xl z-10 flex flex-col p-5 pt-[calc(1.25rem+env(safe-area-inset-top,0px))] transition-colors \${
+          darkMode ? 'bg-slate-900 border-r border-slate-800 text-slate-100' : 'bg-white border-r border-slate-200 text-slate-900'
+        }\`}
+      >
+        <div className="flex items-center justify-between pb-4 border-b border-slate-800/60 mb-4">
+          <h2 className="text-lg font-bold tracking-tight">{title}</h2>
+          <button
+            type="button"
+            onClick={onClose}
+            className={\`p-1.5 rounded-lg \${darkMode ? 'hover:bg-slate-800 text-slate-400' : 'hover:bg-slate-100 text-slate-600'}\`}
+          >
+            \u2715
+          </button>
+        </div>
+
+        <nav className="flex-1 space-y-1.5 overflow-y-auto">
+          {items.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => {
+                item.onClick?.()
+                onClose()
+              }}
+              className={\`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors text-left \${
+                darkMode
+                  ? 'hover:bg-slate-800/80 text-slate-200'
+                  : 'hover:bg-slate-100 text-slate-700'
+              }\`}
+            >
+              {item.icon && <span className="w-5 h-5 flex items-center justify-center text-slate-400">{item.icon}</span>}
+              <span>{item.label}</span>
+            </button>
+          ))}
+        </nav>
+
+        <div className="pt-4 border-t border-slate-800/60 text-xs text-slate-500">
+          CapKit Mobile Starter \u2022 v0.1.0
+        </div>
+      </div>
+    </div>
+  )
+}
+`;
+  await writeComponent("appSidebar", "AppSidebar", appSidebarCode);
+  const toastCode = `import React, { useEffect } from 'react'
+
+${isTs ? `export type ToastType = 'success' | 'error' | 'warning' | 'info'
+
+export interface ToastProps {
+  id?: string
+  type?: ToastType
+  message: string
+  duration?: number
+  onClose: () => void
+}` : ""}
+
+export default function Toast({
+  type = 'info',
+  message,
+  duration = 3000,
+  onClose,
+}${isTs ? ": ToastProps" : ""}) {
+  useEffect(() => {
+    if (duration > 0) {
+      const timer = setTimeout(onClose, duration)
+      return () => clearTimeout(timer)
+    }
+  }, [duration, onClose])
+
+  const typeStyles = {
+    success: 'bg-emerald-600 text-white',
+    error: 'bg-rose-600 text-white',
+    warning: 'bg-amber-500 text-slate-950',
+    info: 'bg-blue-600 text-white',
+  }
+
+  const icons = {
+    success: '\u2713',
+    error: '\u2715',
+    warning: '\u26A0',
+    info: '\u2139',
+  }
+
+  return (
+    <div className="fixed top-4 left-4 right-4 z-50 flex justify-center pointer-events-none pt-[env(safe-area-inset-top,0px)]">
+      <div
+        className={\`pointer-events-auto flex items-center gap-2.5 px-4 py-2.5 rounded-2xl shadow-xl font-medium text-xs max-w-sm w-full transition-all animate-in slide-in-from-top-4 \${
+          typeStyles[type]
+        }\`}
+      >
+        <span className="font-bold">{icons[type]}</span>
+        <span className="flex-1">{message}</span>
+        <button type="button" onClick={onClose} className="opacity-70 hover:opacity-100 font-bold ml-1">
+          \u2715
+        </button>
+      </div>
+    </div>
+  )
+}
+`;
+  await writeComponent("toast", "Toast", toastCode);
+  const alertDialogCode = `import React from 'react'
+
+${isTs ? `export interface AlertDialogProps {
+  isOpen: boolean
+  title: string
+  description?: string
+  confirmText?: string
+  cancelText?: string
+  variant?: 'danger' | 'primary'
+  onConfirm: () => void
+  onCancel: () => void
+  darkMode?: boolean
+}` : ""}
+
+export default function AlertDialog({
+  isOpen,
+  title,
+  description,
+  confirmText = 'Confirm',
+  cancelText = 'Cancel',
+  variant = 'primary',
+  onConfirm,
+  onCancel,
+  darkMode = true,
+}${isTs ? ": AlertDialogProps" : ""}) {
+  if (!isOpen) return null
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      {/* Backdrop */}
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-xs" onClick={onCancel} />
+
+      {/* Dialog Card */}
+      <div
+        className={\`relative w-full max-w-xs rounded-3xl p-5 shadow-2xl border transition-all z-10 \${
+          darkMode ? 'bg-slate-900 border-slate-800 text-slate-100' : 'bg-white border-slate-200 text-slate-900'
+        }\`}
+      >
+        <h3 className="text-base font-bold text-center tracking-tight">{title}</h3>
+        {description && (
+          <p className={\`text-xs text-center mt-1.5 \${darkMode ? 'text-slate-400' : 'text-slate-500'}\`}>
+            {description}
+          </p>
+        )}
+
+        <div className="mt-5 grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={onCancel}
+            className={\`py-2 px-3 rounded-xl text-xs font-semibold border transition-colors \${
+              darkMode ? 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700' : 'bg-slate-100 border-slate-200 text-slate-700 hover:bg-slate-200'
+            }\`}
+          >
+            {cancelText}
+          </button>
+          <button
+            type="button"
+            onClick={onConfirm}
+            className={\`py-2 px-3 rounded-xl text-xs font-semibold text-white shadow-md transition-colors \${
+              variant === 'danger' ? 'bg-rose-600 hover:bg-rose-500' : 'bg-blue-600 hover:bg-blue-500'
+            }\`}
+          >
+            {confirmText}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+`;
+  await writeComponent("alertDialog", "AlertDialog", alertDialogCode);
+  const bottomSheetCode = `import React from 'react'
+
+${isTs ? `export interface BottomSheetProps {
+  isOpen: boolean
+  onClose: () => void
+  title?: string
+  children: React.ReactNode
+  darkMode?: boolean
+}` : ""}
+
+export default function BottomSheet({
+  isOpen,
+  onClose,
+  title,
+  children,
+  darkMode = true,
+}${isTs ? ": BottomSheetProps" : ""}) {
+  if (!isOpen) return null
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end">
+      {/* Backdrop */}
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-xs" onClick={onClose} />
+
+      {/* Sheet Content */}
+      <div
+        className={\`relative w-full max-h-[85vh] overflow-y-auto rounded-t-3xl p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom,0px))] border-t shadow-2xl z-10 transition-colors \${
+          darkMode ? 'bg-slate-900 border-slate-800 text-slate-100' : 'bg-white border-slate-200 text-slate-900'
+        }\`}
+      >
+        {/* Handle Bar */}
+        <div className="w-12 h-1.5 bg-slate-700/50 rounded-full mx-auto mb-4 cursor-grab" onClick={onClose} />
+
+        {title && (
+          <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-800/60">
+            <h3 className="text-base font-bold tracking-tight">{title}</h3>
+            <button type="button" onClick={onClose} className="p-1 text-slate-400 hover:text-slate-200">
+              \u2715
+            </button>
+          </div>
+        )}
+
+        <div>{children}</div>
+      </div>
+    </div>
+  )
+}
+`;
+  await writeComponent("bottomSheet", "BottomSheet", bottomSheetCode);
+  const loadingSpinnerCode = `import React from 'react'
+
+${isTs ? `export interface LoadingSpinnerProps {
+  size?: 'sm' | 'md' | 'lg'
+  label?: string
+}` : ""}
+
+export default function LoadingSpinner({
+  size = 'md',
+  label,
+}${isTs ? ": LoadingSpinnerProps" : ""}) {
+  const sizeClasses = {
+    sm: 'w-4 h-4 border-2',
+    md: 'w-6 h-6 border-2.5',
+    lg: 'w-10 h-10 border-3',
+  }
+
+  return (
+    <div className="flex flex-col items-center justify-center gap-2 p-2">
+      <div
+        className={\`rounded-full border-cyan-500/30 border-t-cyan-400 animate-spin \${sizeClasses[size]}\`}
+      />
+      {label && <span className="text-xs text-slate-400 font-medium">{label}</span>}
+    </div>
+  )
+}
+`;
+  await writeComponent("loadingSpinner", "LoadingSpinner", loadingSpinnerCode);
+  const skeletonCode = `import React from 'react'
+
+${isTs ? `export interface SkeletonProps {
+  className?: string
+  variant?: 'text' | 'circular' | 'rectangular'
+  darkMode?: boolean
+}` : ""}
+
+export default function Skeleton({
+  className = '',
+  variant = 'rectangular',
+  darkMode = true,
+}${isTs ? ": SkeletonProps" : ""}) {
+  const variantClasses = {
+    text: 'h-4 w-full rounded-md',
+    circular: 'rounded-full',
+    rectangular: 'rounded-2xl',
+  }
+
+  return (
+    <div
+      className={\`animate-pulse \${variantClasses[variant]} \${
+        darkMode ? 'bg-slate-800/80' : 'bg-slate-200'
+      } \${className}\`}
+    />
+  )
+}
+`;
+  await writeComponent("skeleton", "Skeleton", skeletonCode);
+  const segmentedControlCode = `import React from 'react'
+
+${isTs ? `export interface SegmentOption {
+  value: string
+  label: string
+}
+
+export interface SegmentedControlProps {
+  options: SegmentOption[]
+  value: string
+  onChange: (value: string) => void
+  darkMode?: boolean
+}` : ""}
+
+export default function SegmentedControl({
+  options,
+  value,
+  onChange,
+  darkMode = true,
+}${isTs ? ": SegmentedControlProps" : ""}) {
+  return (
+    <div
+      className={\`grid grid-flow-col auto-cols-fr p-1 rounded-2xl border transition-colors \${
+        darkMode ? 'bg-slate-900 border-slate-800' : 'bg-slate-100 border-slate-200'
+      }\`}
+    >
+      {options.map((opt) => {
+        const isSelected = opt.value === value
+        return (
+          <button
+            key={opt.value}
+            type="button"
+            onClick={() => onChange(opt.value)}
+            className={\`py-1.5 px-3 rounded-xl text-xs font-semibold transition-all duration-200 \${
+              isSelected
+                ? darkMode
+                  ? 'bg-slate-800 text-white shadow-sm'
+                  : 'bg-white text-slate-900 shadow-sm'
+                : darkMode
+                ? 'text-slate-400 hover:text-slate-200'
+                : 'text-slate-500 hover:text-slate-700'
+            }\`}
+          >
+            {opt.label}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+`;
+  await writeComponent("segmentedControl", "SegmentedControl", segmentedControlCode);
+  const pullToRefreshCode = `import React, { useState, useRef } from 'react'
+
+${isTs ? `export interface PullToRefreshProps {
+  onRefresh: () => Promise<void>
+  children: React.ReactNode
+}` : ""}
+
+export default function PullToRefresh({
+  onRefresh,
+  children,
+}${isTs ? ": PullToRefreshProps" : ""}) {
+  const [pullY, setPullY] = useState(0)
+  const [isRefreshing, setIsRefreshing] = useState(false)
+  const startY = useRef(0)
+
+  const handleTouchStart = (e${isTs ? ": React.TouchEvent" : ""}) => {
+    if (window.scrollY === 0) {
+      startY.current = e.touches[0].clientY
+    }
+  }
+
+  const handleTouchMove = (e${isTs ? ": React.TouchEvent" : ""}) => {
+    if (startY.current > 0 && !isRefreshing && window.scrollY === 0) {
+      const currentY = e.touches[0].clientY
+      const diff = currentY - startY.current
+      if (diff > 0) {
+        setPullY(Math.min(diff * 0.4, 70))
+      }
+    }
+  }
+
+  const handleTouchEnd = async () => {
+    if (pullY > 50 && !isRefreshing) {
+      setIsRefreshing(true)
+      setPullY(50)
+      try {
+        await onRefresh()
+      } finally {
+        setIsRefreshing(false)
+        setPullY(0)
+        startY.current = 0
+      }
+    } else {
+      setPullY(0)
+      startY.current = 0
+    }
+  }
+
+  return (
+    <div
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      className="relative"
+    >
+      {pullY > 0 && (
+        <div
+          style={{ height: \`\${pullY}px\` }}
+          className="flex items-center justify-center overflow-hidden transition-all text-xs text-cyan-400 font-semibold"
+        >
+          {isRefreshing ? 'Refreshing\u2026' : pullY > 50 ? 'Release to refresh' : 'Pull down to refresh'}
+        </div>
+      )}
+      {children}
+    </div>
+  )
+}
+`;
+  await writeComponent("pullToRefresh", "PullToRefresh", pullToRefreshCode);
+  const toggleSwitchCode = `import React from 'react'
+
+${isTs ? `export interface ToggleSwitchProps {
+  checked: boolean
+  onChange: (checked: boolean) => void
+  label?: string
+  description?: string
+  disabled?: boolean
+}` : ""}
+
+export default function ToggleSwitch({
+  checked,
+  onChange,
+  label,
+  description,
+  disabled = false,
+}${isTs ? ": ToggleSwitchProps" : ""}) {
+  return (
+    <div className="flex items-center justify-between gap-3 py-1">
+      {(label || description) && (
+        <div>
+          {label && <p className="font-medium text-sm">{label}</p>}
+          {description && <p className="text-xs text-slate-400 mt-0.5">{description}</p>}
+        </div>
+      )}
+      <button
+        type="button"
+        role="switch"
+        aria-checked={checked}
+        disabled={disabled}
+        onClick={() => onChange(!checked)}
+        className={\`w-12 h-6.5 flex items-center rounded-full p-1 transition-colors duration-200 cursor-pointer disabled:opacity-50 \${
+          checked ? 'bg-blue-600 justify-end' : 'bg-slate-700 justify-start'
+        }\`}
+      >
+        <div className="w-4.5 h-4.5 rounded-full bg-white shadow-md transition-transform" />
+      </button>
+    </div>
+  )
+}
+`;
+  await writeComponent("toggleSwitch", "ToggleSwitch", toggleSwitchCode);
+  const badgeCode = `import React from 'react'
+
+${isTs ? `export type BadgeVariant = 'primary' | 'success' | 'warning' | 'danger' | 'neutral'
+
+export interface BadgeProps {
+  variant?: BadgeVariant
+  children: React.ReactNode
+  className?: string
+}` : ""}
+
+export default function Badge({
+  variant = 'primary',
+  children,
+  className = '',
+}${isTs ? ": BadgeProps" : ""}) {
+  const variantStyles = {
+    primary: 'bg-blue-600/20 border-blue-500/30 text-blue-400',
+    success: 'bg-emerald-600/20 border-emerald-500/30 text-emerald-400',
+    warning: 'bg-amber-600/20 border-amber-500/30 text-amber-400',
+    danger: 'bg-rose-600/20 border-rose-500/30 text-rose-400',
+    neutral: 'bg-slate-800 border-slate-700 text-slate-300',
+  }
+
+  return (
+    <span
+      className={\`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border tracking-wide \${
+        variantStyles[variant]
+      } \${className}\`}
+    >
+      {children}
+    </span>
+  )
+}
+`;
+  await writeComponent("badge", "Badge", badgeCode);
+}
+
+// src/generators/files.ts
 async function generateProjectFiles(targetDir, options) {
   const isTs = options.language === "ts";
   const ext = isTs ? "tsx" : "jsx";
@@ -260,7 +930,7 @@ async function generateProjectFiles(targetDir, options) {
   </body>
 </html>
 `;
-  await writeFile(path4.join(targetDir, "index.html"), indexHtml);
+  await writeFile(path5.join(targetDir, "index.html"), indexHtml);
   let viteConfig = "";
   if (options.tailwind) {
     viteConfig = `import tailwindcss from '@tailwindcss/vite'
@@ -288,7 +958,7 @@ export default defineConfig({
 })
 `;
   }
-  await writeFile(path4.join(targetDir, `vite.config.${configExt}`), viteConfig);
+  await writeFile(path5.join(targetDir, `vite.config.${configExt}`), viteConfig);
   const mainContent = `import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
@@ -300,7 +970,7 @@ createRoot(document.getElementById('root')${isTs ? "!" : ""}).render(
   </StrictMode>,
 )
 `;
-  await writeFile(path4.join(targetDir, "src", `main.${ext}`), mainContent);
+  await writeFile(path5.join(targetDir, "src", `main.${ext}`), mainContent);
   let indexCss = "";
   if (options.tailwind && options.konsta) {
     indexCss = `@import "tailwindcss";
@@ -361,7 +1031,7 @@ body {
 }
 `;
   }
-  await writeFile(path4.join(targetDir, "src", "index.css"), indexCss);
+  await writeFile(path5.join(targetDir, "src", "index.css"), indexCss);
   let appContent = "";
   if (options.konsta) {
     appContent = `import { useState, useEffect } from 'react'
@@ -502,13 +1172,33 @@ function App() {
 export default App
 `;
   } else if (options.tailwind) {
+    await generateTailwindComponents(targetDir, options);
     appContent = `import { useState, useEffect } from 'react'
 ${options.android ? "import { Capacitor } from '@capacitor/core'" : ""}
+import AppHeader from './components/appHeader'
+import TabBar from './components/tabBar'
+import AppSidebar from './components/appSidebar'
+import Toast${isTs ? ", { ToastType }" : ""} from './components/toast'
+import AlertDialog from './components/alertDialog'
+import BottomSheet from './components/bottomSheet'
+import LoadingSpinner from './components/loadingSpinner'
+import Skeleton from './components/skeleton'
+import SegmentedControl from './components/segmentedControl'
+import PullToRefresh from './components/pullToRefresh'
+import ToggleSwitch from './components/toggleSwitch'
+import Badge from './components/badge'
 
 function App() {
+  const [activeTab, setActiveTab] = useState${isTs ? "<string>" : ""}('home')
+  const [activeSegment, setActiveSegment] = useState${isTs ? "<string>" : ""}('overview')
   const [count, setCount] = useState${isTs ? "<number>" : ""}(0)
   const [darkMode, setDarkMode] = useState${isTs ? "<boolean>" : ""}(true)
   const [hapticsEnabled, setHapticsEnabled] = useState${isTs ? "<boolean>" : ""}(true)
+  const [isSidebarOpen, setIsSidebarOpen] = useState${isTs ? "<boolean>" : ""}(false)
+  const [isBottomSheetOpen, setIsBottomSheetOpen] = useState${isTs ? "<boolean>" : ""}(false)
+  const [isAlertOpen, setIsAlertOpen] = useState${isTs ? "<boolean>" : ""}(false)
+  const [toastMessage, setToastMessage] = useState${isTs ? "<{ text: string; type: ToastType } | null>" : ""}(null)
+  const [isLoadingAsync, setIsLoadingAsync] = useState${isTs ? "<boolean>" : ""}(false)
 
   ${options.android ? `const platform = Capacitor.getPlatform()
   const isNative = Capacitor.isNativePlatform()` : `const platform = 'web'
@@ -522,183 +1212,369 @@ function App() {
     }
   }, [darkMode])
 
+  const showToast = (text${isTs ? ": string" : ""}, type${isTs ? ": ToastType" : ""} = 'info') => {
+    setToastMessage({ text, type })
+  }
+
+  const handleRefresh = async () => {
+    setIsLoadingAsync(true)
+    await new Promise((resolve) => setTimeout(resolve, 1500))
+    setIsLoadingAsync(false)
+    showToast('Data refreshed successfully!', 'success')
+  }
+
+  const tabs = [
+    {
+      id: 'home',
+      label: 'Home',
+      icon: (
+        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l9-9 9 9M5 10v10a1 1 0 001 1h3a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1h3a1 1 0 001-1V10" />
+        </svg>
+      ),
+    },
+    {
+      id: 'controls',
+      label: 'Controls',
+      icon: (
+        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+        </svg>
+      ),
+      badge: 2,
+    },
+    {
+      id: 'overlays',
+      label: 'Overlays',
+      icon: (
+        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V6z" />
+        </svg>
+      ),
+    },
+  ]
+
+  const sidebarItems = [
+    { id: '1', label: 'Dashboard', icon: '\u{1F4CA}', onClick: () => setActiveTab('home') },
+    { id: '2', label: 'Component Suite', icon: '\u{1F9E9}', onClick: () => setActiveTab('controls') },
+    { id: '3', label: 'Modal Overlays', icon: '\u{1F4F1}', onClick: () => setActiveTab('overlays') },
+    { id: '4', label: 'Show Alert Dialog', icon: '\u26A0\uFE0F', onClick: () => setIsAlertOpen(true) },
+  ]
+
   return (
     <div className={\`min-h-screen transition-colors duration-200 \${
       darkMode ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'
     }\`}>
-      {/* Sticky Header / Navbar */}
-      <header className={\`sticky top-0 z-50 px-4 py-3 border-b backdrop-blur-md transition-colors \${
-        darkMode ? 'bg-slate-950/80 border-slate-800/80' : 'bg-white/80 border-slate-200/80'
-      }\`}>
-        <div className="max-w-md mx-auto flex items-center justify-between">
-          <div>
-            <h2 className="text-base font-bold tracking-tight">${options.projectName}</h2>
-            <p className="text-[11px] text-slate-400">Mobile Starter Kit</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setDarkMode(!darkMode)}
-              className={\`p-1.5 rounded-full transition-colors \${
-                darkMode ? 'bg-slate-800 text-amber-300' : 'bg-slate-200 text-slate-700'
-              }\`}
-              aria-label="Toggle Theme"
-            >
-              {darkMode ? '\u{1F319}' : '\u2600\uFE0F'}
-            </button>
-            <span className={\`text-[11px] font-semibold px-2 py-0.5 rounded-full text-white \${
-              isNative ? 'bg-emerald-600' : 'bg-blue-600'
-            }\`}>
-              {platform.toUpperCase()}
-            </span>
-          </div>
-        </div>
-      </header>
+      {/* Toast Notification */}
+      {toastMessage && (
+        <Toast
+          type={toastMessage.type}
+          message={toastMessage.text}
+          onClose={() => setToastMessage(null)}
+        />
+      )}
 
-      {/* Main Content Container */}
-      <main className="max-w-md mx-auto px-4 pb-12 pt-6 space-y-6">
-        {/* Hero Section */}
-        <section className="text-center pt-2">
-          <div className="inline-flex items-center justify-center p-3.5 bg-gradient-to-tr from-cyan-500/20 to-blue-600/20 border border-cyan-500/30 rounded-2xl mb-3 shadow-lg">
-            <svg
-              className="w-10 h-10 text-cyan-400"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.75"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <rect width="14" height="20" x="5" y="2" rx="2" ry="2" />
-              <path d="M12 18h.01" />
-            </svg>
-          </div>
-          <h1 className={\`text-2xl font-bold tracking-tight \${darkMode ? 'text-white' : 'text-slate-900'}\`}>
-            React Mobile App
-          </h1>
-          <p className={\`text-xs mt-1.5 \${darkMode ? 'text-slate-400' : 'text-slate-500'}\`}>
-            Tailwind CSS v4 &bull; Capacitor {isNative ? 'Native' : 'Web'}
+      {/* Slide-out Navigation Drawer */}
+      <AppSidebar
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+        title="CapKit Navigation"
+        items={sidebarItems}
+        darkMode={darkMode}
+      />
+
+      {/* Alert Dialog Popup */}
+      <AlertDialog
+        isOpen={isAlertOpen}
+        title="Reset State Counter?"
+        description="This will reset your current taps counter back to 0."
+        confirmText="Reset Now"
+        variant="danger"
+        onConfirm={() => {
+          setCount(0)
+          setIsAlertOpen(false)
+          showToast('Counter reset to 0', 'warning')
+        }}
+        onCancel={() => setIsAlertOpen(false)}
+        darkMode={darkMode}
+      />
+
+      {/* Draggable Bottom Sheet */}
+      <BottomSheet
+        isOpen={isBottomSheetOpen}
+        onClose={() => setIsBottomSheetOpen(false)}
+        title="CapKit Mobile Components"
+        darkMode={darkMode}
+      >
+        <div className="space-y-4 py-2">
+          <p className="text-xs text-slate-400">
+            This draggable bottom sheet provides native mobile drawer experiences for menus, filters, and forms.
           </p>
-        </section>
-
-        {/* Section 1: Interactive State & HMR */}
-        <section className="space-y-2">
-          <h3 className={\`text-xs font-semibold uppercase tracking-wider px-1 \${
-            darkMode ? 'text-slate-400' : 'text-slate-500'
-          }\`}>
-            Interactive State & HMR
-          </h3>
-          <div className={\`p-4 rounded-2xl border transition-colors flex items-center justify-between \${
-            darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-sm'
-          }\`}>
-            <div>
-              <p className="font-semibold text-sm">State Counter</p>
-              <p className={\`text-xs mt-0.5 \${darkMode ? 'text-slate-400' : 'text-slate-500'}\`}>
-                Taps: {count}
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => setCount((c) => c + 1)}
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-500 active:scale-95 text-white text-xs font-semibold rounded-xl shadow-md transition-all"
-            >
-              Increment ({count})
-            </button>
+          <div className="flex gap-2 flex-wrap">
+            <Badge variant="primary">Header</Badge>
+            <Badge variant="success">TabBar</Badge>
+            <Badge variant="warning">Drawer</Badge>
+            <Badge variant="danger">AlertDialog</Badge>
+            <Badge variant="neutral">PullToRefresh</Badge>
           </div>
-        </section>
+          <button
+            type="button"
+            onClick={() => {
+              setIsBottomSheetOpen(false)
+              showToast('Action confirmed from BottomSheet', 'success')
+            }}
+            className="w-full py-2.5 bg-blue-600 text-white rounded-xl text-xs font-semibold shadow-md active:scale-98"
+          >
+            Confirm & Close
+          </button>
+        </div>
+      </BottomSheet>
 
-        {/* Section 2: Device & App Settings */}
-        <section className="space-y-2">
-          <h3 className={\`text-xs font-semibold uppercase tracking-wider px-1 \${
-            darkMode ? 'text-slate-400' : 'text-slate-500'
-          }\`}>
-            Device & App Settings
-          </h3>
-          <div className={\`divide-y rounded-2xl border transition-colors overflow-hidden \${
-            darkMode
-              ? 'bg-slate-900 border-slate-800 divide-slate-800/80'
-              : 'bg-white border-slate-200 divide-slate-100 shadow-sm'
-          }\`}>
-            {/* Platform Item */}
-            <div className="p-3.5 flex items-center justify-between">
-              <div>
-                <p className="font-medium text-sm">Platform</p>
-                <p className={\`text-xs mt-0.5 \${darkMode ? 'text-slate-400' : 'text-slate-500'}\`}>
-                  {isNative ? 'Running on physical device' : 'Running in browser'}
-                </p>
-              </div>
-              <span className={\`text-xs font-semibold \${darkMode ? 'text-slate-300' : 'text-slate-600'}\`}>
-                {platform.toUpperCase()}
-              </span>
-            </div>
+      {/* Sticky App Header */}
+      <AppHeader
+        title="${options.projectName}"
+        subtitle="Mobile Component Suite"
+        platform={platform}
+        isNative={isNative}
+        darkMode={darkMode}
+        onToggleTheme={() => setDarkMode(!darkMode)}
+        onOpenSidebar={() => setIsSidebarOpen(true)}
+      />
 
-            {/* Dark Mode Toggle */}
-            <div className="p-3.5 flex items-center justify-between">
-              <div>
-                <p className="font-medium text-sm">Dark Mode</p>
-                <p className={\`text-xs mt-0.5 \${darkMode ? 'text-slate-400' : 'text-slate-500'}\`}>
-                  {darkMode ? 'Pure Dark theme active' : 'Clean Light theme active'}
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setDarkMode(!darkMode)}
-                className={\`w-12 h-6 flex items-center rounded-full p-1 transition-colors duration-200 cursor-pointer \${
-                  darkMode ? 'bg-blue-600 justify-end' : 'bg-slate-300 justify-start'
-                }\`}
-              >
-                <div className="w-4 h-4 rounded-full bg-white shadow-md transition-transform" />
-              </button>
-            </div>
+      {/* Main Tab Content with PullToRefresh */}
+      <PullToRefresh onRefresh={handleRefresh}>
+        <main className="max-w-md mx-auto px-4 pb-24 pt-4 space-y-5">
+          {activeTab === 'home' && (
+            <div className="space-y-5 animate-in fade-in duration-200">
+              {/* Hero Banner */}
+              <section className="text-center pt-2">
+                <div className="inline-flex items-center justify-center p-3.5 bg-gradient-to-tr from-cyan-500/20 to-blue-600/20 border border-cyan-500/30 rounded-2xl mb-3 shadow-lg">
+                  <svg className="w-10 h-10 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
+                    <rect width="14" height="20" x="5" y="2" rx="2" ry="2" />
+                    <path d="M12 18h.01" />
+                  </svg>
+                </div>
+                <h2 className="text-2xl font-bold tracking-tight">CapKit Mobile Starter</h2>
+                <div className="flex items-center justify-center gap-1.5 mt-2">
+                  <Badge variant="primary">React 19</Badge>
+                  <Badge variant="success">Capacitor 8</Badge>
+                  <Badge variant="warning">Tailwind v4</Badge>
+                </div>
+              </section>
 
-            {/* Haptics Toggle */}
-            <div className="p-3.5 flex items-center justify-between">
-              <div>
-                <p className="font-medium text-sm">Haptics Feedback</p>
-                <p className={\`text-xs mt-0.5 \${darkMode ? 'text-slate-400' : 'text-slate-500'}\`}>
-                  {hapticsEnabled ? 'Vibration enabled' : 'Disabled'}
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setHapticsEnabled(!hapticsEnabled)}
-                className={\`w-12 h-6 flex items-center rounded-full p-1 transition-colors duration-200 cursor-pointer \${
-                  hapticsEnabled ? 'bg-blue-600 justify-end' : 'bg-slate-300 justify-start'
-                }\`}
-              >
-                <div className="w-4 h-4 rounded-full bg-white shadow-md transition-transform" />
-              </button>
-            </div>
-          </div>
-        </section>
+              {/* Segmented Control */}
+              <section>
+                <SegmentedControl
+                  options={[
+                    { value: 'overview', label: 'Overview' },
+                    { value: 'interactive', label: 'Counter' },
+                    { value: 'async', label: 'Async Demo' },
+                  ]}
+                  value={activeSegment}
+                  onChange={setActiveSegment}
+                  darkMode={darkMode}
+                />
+              </section>
 
-        {/* Section 3: Next Steps */}
-        <section className="space-y-2">
-          <h3 className={\`text-xs font-semibold uppercase tracking-wider px-1 \${
-            darkMode ? 'text-slate-400' : 'text-slate-500'
-          }\`}>
-            Next Steps
-          </h3>
-          <div className={\`divide-y rounded-2xl border transition-colors overflow-hidden \${
-            darkMode
-              ? 'bg-slate-900 border-slate-800 divide-slate-800/80'
-              : 'bg-white border-slate-200 divide-slate-100 shadow-sm'
-          }\`}>
-            <div className="p-3.5">
-              <p className="font-medium text-sm">\u{1F525} Hot Module Reload</p>
-              <p className={\`text-xs mt-0.5 \${darkMode ? 'text-slate-400' : 'text-slate-500'}\`}>
-                Edit src/App.${ext} to test live updates on your phone
-              </p>
+              {/* Segment 1: Overview */}
+              {activeSegment === 'overview' && (
+                <div className={\`p-4 rounded-2xl border transition-colors space-y-3 \${
+                  darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-sm'
+                }\`}>
+                  <h3 className="font-semibold text-sm">Reusable Mobile System</h3>
+                  <p className="text-xs text-slate-400 leading-relaxed">
+                    Every component is built modularly under <code className="text-cyan-400">src/components/</code> following clean project structure conventions.
+                  </p>
+                  <div className="grid grid-cols-2 gap-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => setIsBottomSheetOpen(true)}
+                      className="p-2.5 bg-slate-800/80 hover:bg-slate-800 rounded-xl text-xs font-medium text-slate-200 border border-slate-700 text-center"
+                    >
+                      Open BottomSheet \u2197
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => showToast('Pull-to-refresh enabled on top!', 'info')}
+                      className="p-2.5 bg-slate-800/80 hover:bg-slate-800 rounded-xl text-xs font-medium text-slate-200 border border-slate-700 text-center"
+                    >
+                      Test Pull-to-Refresh
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Segment 2: Interactive Counter */}
+              {activeSegment === 'interactive' && (
+                <div className={\`p-4 rounded-2xl border transition-colors flex items-center justify-between \${
+                  darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-sm'
+                }\`}>
+                  <div>
+                    <p className="font-semibold text-sm">State Counter</p>
+                    <p className="text-xs text-slate-400 mt-0.5">Taps: {count}</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCount((c) => c + 1)
+                        if (count + 1 % 5 === 0) showToast(\`Reached \${count + 1} taps! \u{1F389}\`, 'success')
+                      }}
+                      className="px-4 py-2 bg-blue-600 hover:bg-blue-500 active:scale-95 text-white text-xs font-semibold rounded-xl shadow-md transition-all"
+                    >
+                      Increment ({count})
+                    </button>
+                    {count > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setIsAlertOpen(true)}
+                        className="px-3 py-2 bg-rose-600/20 text-rose-400 border border-rose-500/30 text-xs font-semibold rounded-xl"
+                      >
+                        Reset
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Segment 3: Async & Skeletons */}
+              {activeSegment === 'async' && (
+                <div className={\`p-4 rounded-2xl border transition-colors space-y-3 \${
+                  darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-sm'
+                }\`}>
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold text-sm">Loading Skeletons Demo</span>
+                    <button
+                      type="button"
+                      onClick={handleRefresh}
+                      className="text-xs text-cyan-400 font-semibold"
+                    >
+                      {isLoadingAsync ? 'Loading\u2026' : 'Trigger Reload'}
+                    </button>
+                  </div>
+                  {isLoadingAsync ? (
+                    <div className="space-y-2 py-2">
+                      <LoadingSpinner size="md" label="Fetching live device state\u2026" />
+                      <Skeleton className="h-4 w-3/4" darkMode={darkMode} />
+                      <Skeleton className="h-4 w-full" darkMode={darkMode} />
+                      <Skeleton className="h-12 w-full" darkMode={darkMode} />
+                    </div>
+                  ) : (
+                    <p className="text-xs text-slate-400">
+                      Tap "Trigger Reload" or pull down the page to see the skeleton loader and spinner in action.
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
-            <div className="p-3.5">
-              <p className="font-medium text-sm">\u{1F50C} Native Plugins</p>
-              <p className={\`text-xs mt-0.5 \${darkMode ? 'text-slate-400' : 'text-slate-500'}\`}>
-                Install @capacitor/camera, @capacitor/geolocation etc.
-              </p>
+          )}
+
+          {/* Controls Tab */}
+          {activeTab === 'controls' && (
+            <div className="space-y-5 animate-in fade-in duration-200">
+              <section className="space-y-2">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 px-1">
+                  Device & App Settings
+                </h3>
+                <div className={\`p-4 rounded-2xl border divide-y transition-colors \${
+                  darkMode
+                    ? 'bg-slate-900 border-slate-800 divide-slate-800/80'
+                    : 'bg-white border-slate-200 divide-slate-100 shadow-sm'
+                }\`}>
+                  <ToggleSwitch
+                    label="Dark Mode"
+                    description="Switch between dark and light themes"
+                    checked={darkMode}
+                    onChange={setDarkMode}
+                  />
+                  <div className="pt-2">
+                    <ToggleSwitch
+                      label="Haptics Vibration"
+                      description="Vibrate device on interactive feedback"
+                      checked={hapticsEnabled}
+                      onChange={(val) => {
+                        setHapticsEnabled(val)
+                        showToast(val ? 'Haptics enabled' : 'Haptics disabled', 'info')
+                      }}
+                    />
+                  </div>
+                </div>
+              </section>
+
+              <section className="space-y-2">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 px-1">
+                  Modal & Sheet Triggers
+                </h3>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsBottomSheetOpen(true)}
+                    className="p-3 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl text-xs font-semibold shadow-md active:scale-95"
+                  >
+                    Open BottomSheet
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsAlertOpen(true)}
+                    className="p-3 bg-rose-600 hover:bg-rose-500 text-white rounded-2xl text-xs font-semibold shadow-md active:scale-95"
+                  >
+                    Show Alert Dialog
+                  </button>
+                </div>
+              </section>
             </div>
-          </div>
-        </section>
-      </main>
+          )}
+
+          {/* Overlays Tab */}
+          {activeTab === 'overlays' && (
+            <div className="space-y-5 animate-in fade-in duration-200">
+              <section className="space-y-2">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 px-1">
+                  Toast Notification Triggers
+                </h3>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => showToast('Success! Operation completed.', 'success')}
+                    className="p-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl text-xs font-semibold shadow-md active:scale-95"
+                  >
+                    \u2713 Success Toast
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => showToast('Error! Connection failed.', 'error')}
+                    className="p-3 bg-rose-600 hover:bg-rose-500 text-white rounded-2xl text-xs font-semibold shadow-md active:scale-95"
+                  >
+                    \u2715 Error Toast
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => showToast('Warning! Low battery detected.', 'warning')}
+                    className="p-3 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-2xl text-xs font-semibold shadow-md active:scale-95"
+                  >
+                    \u26A0 Warning Toast
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => showToast('Info: New update available.', 'info')}
+                    className="p-3 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl text-xs font-semibold shadow-md active:scale-95"
+                  >
+                    \u2139 Info Toast
+                  </button>
+                </div>
+              </section>
+            </div>
+          )}
+        </main>
+      </PullToRefresh>
+
+      {/* Sticky Bottom Tab Bar */}
+      <TabBar
+        tabs={tabs}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        darkMode={darkMode}
+      />
     </div>
   )
 }
@@ -734,7 +1610,7 @@ function App() {
 export default App
 `;
   }
-  await writeFile(path4.join(targetDir, "src", `App.${ext}`), appContent);
+  await writeFile(path5.join(targetDir, "src", `App.${ext}`), appContent);
   if (isTs) {
     const tsconfig = {
       files: [],
@@ -743,7 +1619,7 @@ export default App
         { path: "./tsconfig.node.json" }
       ]
     };
-    await writeJson(path4.join(targetDir, "tsconfig.json"), tsconfig);
+    await writeJson(path5.join(targetDir, "tsconfig.json"), tsconfig);
     const tsconfigApp = {
       compilerOptions: {
         tsBuildInfoFile: "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
@@ -766,7 +1642,7 @@ export default App
       },
       include: ["src"]
     };
-    await writeJson(path4.join(targetDir, "tsconfig.app.json"), tsconfigApp);
+    await writeJson(path5.join(targetDir, "tsconfig.app.json"), tsconfigApp);
     const tsconfigNode = {
       compilerOptions: {
         tsBuildInfoFile: "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
@@ -787,7 +1663,7 @@ export default App
       },
       include: ["vite.config.ts"]
     };
-    await writeJson(path4.join(targetDir, "tsconfig.node.json"), tsconfigNode);
+    await writeJson(path5.join(targetDir, "tsconfig.node.json"), tsconfigNode);
   }
   const gitignore = `node_modules
 dist
@@ -795,7 +1671,7 @@ dist-ssr
 *.local
 .DS_Store
 `;
-  await writeFile(path4.join(targetDir, ".gitignore"), gitignore);
+  await writeFile(path5.join(targetDir, ".gitignore"), gitignore);
   const readmeContent = `# ${options.projectName}
 
 Scaffolded with **[CapKit](https://github.com/w15147m/capkit)** \u2014 Interactive Capacitor starter kit.
@@ -878,7 +1754,7 @@ When you are ready to build a standalone offline release APK:
    \`\`\`
 ` : ""}
 `;
-  await writeFile(path4.join(targetDir, "README.md"), readmeContent);
+  await writeFile(path5.join(targetDir, "README.md"), readmeContent);
 }
 
 // src/generators/project.ts
@@ -886,12 +1762,12 @@ async function generateProject(options) {
   const targetDir = options.targetDir;
   await ensureDir(targetDir);
   const packageJson = generatePackageJson(options);
-  await writeJson(path5.join(targetDir, "package.json"), packageJson);
+  await writeJson(path6.join(targetDir, "package.json"), packageJson);
   await generateProjectFiles(targetDir, options);
   if (options.android) {
-    await ensureDir(path5.join(targetDir, "dist"));
+    await ensureDir(path6.join(targetDir, "dist"));
     await writeFile(
-      path5.join(targetDir, "dist", "index.html"),
+      path6.join(targetDir, "dist", "index.html"),
       "<!doctype html><html><body></body></html>"
     );
     await generateCapacitorConfig(targetDir, options);
@@ -928,7 +1804,7 @@ async function main() {
     installSpinner.stop("Dependencies installed!");
   }
   const isCurrentDir = options.targetDir === process.cwd();
-  const relativeDir = isCurrentDir ? "" : path6.relative(process.cwd(), options.targetDir);
+  const relativeDir = isCurrentDir ? "" : path7.relative(process.cwd(), options.targetDir);
   p2.note(
     [
       relativeDir ? pc2.cyan(`cd ${relativeDir}`) : "",
