@@ -1,5 +1,9 @@
 {
   "appId": "com.example.app",
   "appName": "my-capacitor-app",
-  "webDir": "dist"
+  "webDir": "dist",
+  "server": {
+    "url": "http://YOUR_LOCAL_IP:5173",
+    "cleartext": true
+  }
 }
