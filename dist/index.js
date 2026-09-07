@@ -246,20 +246,10 @@ import path5 from "pathe";
 
 // src/generators/tailwindComponents.ts
 import path4 from "pathe";
-async function generateTailwindComponents(targetDir, options) {
-  const isTs = options.language === "ts";
-  const ext = isTs ? "tsx" : "jsx";
-  const indexExt = isTs ? "ts" : "js";
-  async function writeComponent(folderName, componentName, code) {
-    const componentDir = path4.join(targetDir, "src", "components", folderName);
-    await writeFile(path4.join(componentDir, `${componentName}.${ext}`), code);
-    await writeFile(
-      path4.join(componentDir, `index.${indexExt}`),
-      `export { default } from './${componentName}'
-`
-    );
-  }
-  const appHeaderCode = `import React from 'react'
+
+// src/generators/templates/components/appHeader.ts
+function getAppHeaderTemplate(isTs) {
+  return `import React from 'react'
 
 ${isTs ? `export interface AppHeaderProps {
   title: string
@@ -334,8 +324,11 @@ export default function AppHeader({
   )
 }
 `;
-  await writeComponent("appHeader", "AppHeader", appHeaderCode);
-  const tabBarCode = `import React from 'react'
+}
+
+// src/generators/templates/components/tabBar.ts
+function getTabBarTemplate(isTs) {
+  return `import React from 'react'
 
 ${isTs ? `export interface TabItem {
   id: string
@@ -396,8 +389,11 @@ export default function TabBar({
   )
 }
 `;
-  await writeComponent("tabBar", "TabBar", tabBarCode);
-  const appSidebarCode = `import React from 'react'
+}
+
+// src/generators/templates/components/appSidebar.ts
+function getAppSidebarTemplate(isTs) {
+  return `import React from 'react'
 
 ${isTs ? `export interface SidebarItem {
   id: string
@@ -477,8 +473,11 @@ export default function AppSidebar({
   )
 }
 `;
-  await writeComponent("appSidebar", "AppSidebar", appSidebarCode);
-  const toastCode = `import React, { useEffect } from 'react'
+}
+
+// src/generators/templates/components/toast.ts
+function getToastTemplate(isTs) {
+  return `import React, { useEffect } from 'react'
 
 ${isTs ? `export type ToastType = 'success' | 'error' | 'warning' | 'info'
 
@@ -534,8 +533,11 @@ export default function Toast({
   )
 }
 `;
-  await writeComponent("toast", "Toast", toastCode);
-  const alertDialogCode = `import React from 'react'
+}
+
+// src/generators/templates/components/alertDialog.ts
+function getAlertDialogTemplate(isTs) {
+  return `import React from 'react'
 
 ${isTs ? `export interface AlertDialogProps {
   isOpen: boolean
@@ -605,8 +607,11 @@ export default function AlertDialog({
   )
 }
 `;
-  await writeComponent("alertDialog", "AlertDialog", alertDialogCode);
-  const bottomSheetCode = `import React from 'react'
+}
+
+// src/generators/templates/components/bottomSheet.ts
+function getBottomSheetTemplate(isTs) {
+  return `import React from 'react'
 
 ${isTs ? `export interface BottomSheetProps {
   isOpen: boolean
@@ -654,8 +659,11 @@ export default function BottomSheet({
   )
 }
 `;
-  await writeComponent("bottomSheet", "BottomSheet", bottomSheetCode);
-  const loadingSpinnerCode = `import React from 'react'
+}
+
+// src/generators/templates/components/loadingSpinner.ts
+function getLoadingSpinnerTemplate(isTs) {
+  return `import React from 'react'
 
 ${isTs ? `export interface LoadingSpinnerProps {
   size?: 'sm' | 'md' | 'lg'
@@ -682,8 +690,11 @@ export default function LoadingSpinner({
   )
 }
 `;
-  await writeComponent("loadingSpinner", "LoadingSpinner", loadingSpinnerCode);
-  const skeletonCode = `import React from 'react'
+}
+
+// src/generators/templates/components/skeleton.ts
+function getSkeletonTemplate(isTs) {
+  return `import React from 'react'
 
 ${isTs ? `export interface SkeletonProps {
   className?: string
@@ -711,8 +722,11 @@ export default function Skeleton({
   )
 }
 `;
-  await writeComponent("skeleton", "Skeleton", skeletonCode);
-  const segmentedControlCode = `import React from 'react'
+}
+
+// src/generators/templates/components/segmentedControl.ts
+function getSegmentedControlTemplate(isTs) {
+  return `import React from 'react'
 
 ${isTs ? `export interface SegmentOption {
   value: string
@@ -763,8 +777,11 @@ export default function SegmentedControl({
   )
 }
 `;
-  await writeComponent("segmentedControl", "SegmentedControl", segmentedControlCode);
-  const pullToRefreshCode = `import React, { useState, useRef } from 'react'
+}
+
+// src/generators/templates/components/pullToRefresh.ts
+function getPullToRefreshTemplate(isTs) {
+  return `import React, { useState, useRef } from 'react'
 
 ${isTs ? `export interface PullToRefreshProps {
   onRefresh: () => Promise<void>
@@ -832,8 +849,11 @@ export default function PullToRefresh({
   )
 }
 `;
-  await writeComponent("pullToRefresh", "PullToRefresh", pullToRefreshCode);
-  const toggleSwitchCode = `import React from 'react'
+}
+
+// src/generators/templates/components/toggleSwitch.ts
+function getToggleSwitchTemplate(isTs) {
+  return `import React from 'react'
 
 ${isTs ? `export interface ToggleSwitchProps {
   checked: boolean
@@ -874,8 +894,11 @@ export default function ToggleSwitch({
   )
 }
 `;
-  await writeComponent("toggleSwitch", "ToggleSwitch", toggleSwitchCode);
-  const badgeCode = `import React from 'react'
+}
+
+// src/generators/templates/components/badge.ts
+function getBadgeTemplate(isTs) {
+  return `import React from 'react'
 
 ${isTs ? `export type BadgeVariant = 'primary' | 'success' | 'warning' | 'danger' | 'neutral'
 
@@ -909,7 +932,578 @@ export default function Badge({
   )
 }
 `;
-  await writeComponent("badge", "Badge", badgeCode);
+}
+
+// src/generators/templates/views/homeView.ts
+function getHomeViewTemplate(isTs) {
+  return `import React, { useState } from 'react'
+import Badge from '../../components/badge'
+import SegmentedControl from '../../components/segmentedControl'
+import Skeleton from '../../components/skeleton'
+import LoadingSpinner from '../../components/loadingSpinner'
+
+${isTs ? `export interface HomeViewProps {
+  count: number
+  onIncrement: () => void
+  onReset: () => void
+  darkMode: boolean
+  onOpenBottomSheet: () => void
+  onShowToast: (msg: string, type?: 'success' | 'error' | 'warning' | 'info') => void
+  isLoadingAsync: boolean
+  onTriggerReload: () => void
+}` : ""}
+
+export default function HomeView({
+  count,
+  onIncrement,
+  onReset,
+  darkMode,
+  onOpenBottomSheet,
+  onShowToast,
+  isLoadingAsync,
+  onTriggerReload,
+}${isTs ? ": HomeViewProps" : ""}) {
+  const [activeSegment, setActiveSegment] = useState${isTs ? "<string>" : ""}('overview')
+
+  return (
+    <div className="space-y-5 animate-in fade-in duration-200">
+      {/* Hero Banner */}
+      <section className="text-center pt-2">
+        <div className="inline-flex items-center justify-center p-3.5 bg-gradient-to-tr from-cyan-500/20 to-blue-600/20 border border-cyan-500/30 rounded-2xl mb-3 shadow-lg">
+          <svg className="w-10 h-10 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
+            <rect width="14" height="20" x="5" y="2" rx="2" ry="2" />
+            <path d="M12 18h.01" />
+          </svg>
+        </div>
+        <h2 className="text-2xl font-bold tracking-tight">CapKit Mobile Starter</h2>
+        <div className="flex items-center justify-center gap-1.5 mt-2">
+          <Badge variant="primary">React 19</Badge>
+          <Badge variant="success">Capacitor 8</Badge>
+          <Badge variant="warning">Tailwind v4</Badge>
+        </div>
+      </section>
+
+      {/* Segmented Control */}
+      <section>
+        <SegmentedControl
+          options={[
+            { value: 'overview', label: 'Overview' },
+            { value: 'interactive', label: 'Counter' },
+            { value: 'async', label: 'Async Demo' },
+          ]}
+          value={activeSegment}
+          onChange={setActiveSegment}
+          darkMode={darkMode}
+        />
+      </section>
+
+      {/* Segment 1: Overview */}
+      {activeSegment === 'overview' && (
+        <div className={\`p-4 rounded-2xl border transition-colors space-y-3 \${
+          darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-sm'
+        }\`}>
+          <h3 className="font-semibold text-sm">Reusable Mobile System</h3>
+          <p className="text-xs text-slate-400 leading-relaxed">
+            Every component is built modularly under <code className="text-cyan-400">src/components/</code> following clean project structure conventions.
+          </p>
+          <div className="grid grid-cols-2 gap-2 pt-1">
+            <button
+              type="button"
+              onClick={onOpenBottomSheet}
+              className="p-2.5 bg-slate-800/80 hover:bg-slate-800 rounded-xl text-xs font-medium text-slate-200 border border-slate-700 text-center"
+            >
+              Open BottomSheet \u2197
+            </button>
+            <button
+              type="button"
+              onClick={() => onShowToast('Pull-to-refresh enabled on top!', 'info')}
+              className="p-2.5 bg-slate-800/80 hover:bg-slate-800 rounded-xl text-xs font-medium text-slate-200 border border-slate-700 text-center"
+            >
+              Test Pull-to-Refresh
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Segment 2: Interactive Counter */}
+      {activeSegment === 'interactive' && (
+        <div className={\`p-4 rounded-2xl border transition-colors flex items-center justify-between \${
+          darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-sm'
+        }\`}>
+          <div>
+            <p className="font-semibold text-sm">State Counter</p>
+            <p className="text-xs text-slate-400 mt-0.5">Taps: {count}</p>
+          </div>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={onIncrement}
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-500 active:scale-95 text-white text-xs font-semibold rounded-xl shadow-md transition-all"
+            >
+              Increment ({count})
+            </button>
+            {count > 0 && (
+              <button
+                type="button"
+                onClick={onReset}
+                className="px-3 py-2 bg-rose-600/20 text-rose-400 border border-rose-500/30 text-xs font-semibold rounded-xl"
+              >
+                Reset
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Segment 3: Async & Skeletons */}
+      {activeSegment === 'async' && (
+        <div className={\`p-4 rounded-2xl border transition-colors space-y-3 \${
+          darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-sm'
+        }\`}>
+          <div className="flex items-center justify-between">
+            <span className="font-semibold text-sm">Loading Skeletons Demo</span>
+            <button
+              type="button"
+              onClick={onTriggerReload}
+              className="text-xs text-cyan-400 font-semibold"
+            >
+              {isLoadingAsync ? 'Loading\u2026' : 'Trigger Reload'}
+            </button>
+          </div>
+          {isLoadingAsync ? (
+            <div className="space-y-2 py-2">
+              <LoadingSpinner size="md" label="Fetching live device state\u2026" />
+              <Skeleton className="h-4 w-3/4" darkMode={darkMode} />
+              <Skeleton className="h-4 w-full" darkMode={darkMode} />
+              <Skeleton className="h-12 w-full" darkMode={darkMode} />
+            </div>
+          ) : (
+            <p className="text-xs text-slate-400">
+              Tap "Trigger Reload" or pull down the page to see the skeleton loader and spinner in action.
+            </p>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+`;
+}
+
+// src/generators/templates/views/controlsView.ts
+function getControlsViewTemplate(isTs) {
+  return `import React from 'react'
+import ToggleSwitch from '../../components/toggleSwitch'
+
+${isTs ? `export interface ControlsViewProps {
+  darkMode: boolean
+  onToggleDarkMode: (val: boolean) => void
+  hapticsEnabled: boolean
+  onToggleHaptics: (val: boolean) => void
+  onOpenBottomSheet: () => void
+  onOpenAlert: () => void
+}` : ""}
+
+export default function ControlsView({
+  darkMode,
+  onToggleDarkMode,
+  hapticsEnabled,
+  onToggleHaptics,
+  onOpenBottomSheet,
+  onOpenAlert,
+}${isTs ? ": ControlsViewProps" : ""}) {
+  return (
+    <div className="space-y-5 animate-in fade-in duration-200">
+      <section className="space-y-2">
+        <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 px-1">
+          Device & App Settings
+        </h3>
+        <div className={\`p-4 rounded-2xl border divide-y transition-colors \${
+          darkMode
+            ? 'bg-slate-900 border-slate-800 divide-slate-800/80'
+            : 'bg-white border-slate-200 divide-slate-100 shadow-sm'
+        }\`}>
+          <ToggleSwitch
+            label="Dark Mode"
+            description="Switch between dark and light themes"
+            checked={darkMode}
+            onChange={onToggleDarkMode}
+          />
+          <div className="pt-2">
+            <ToggleSwitch
+              label="Haptics Vibration"
+              description="Vibrate device on interactive feedback"
+              checked={hapticsEnabled}
+              onChange={onToggleHaptics}
+            />
+          </div>
+        </div>
+      </section>
+
+      <section className="space-y-2">
+        <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 px-1">
+          Modal & Sheet Triggers
+        </h3>
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={onOpenBottomSheet}
+            className="p-3 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl text-xs font-semibold shadow-md active:scale-95 text-center"
+          >
+            Open BottomSheet
+          </button>
+          <button
+            type="button"
+            onClick={onOpenAlert}
+            className="p-3 bg-rose-600 hover:bg-rose-500 text-white rounded-2xl text-xs font-semibold shadow-md active:scale-95 text-center"
+          >
+            Show Alert Dialog
+          </button>
+        </div>
+      </section>
+    </div>
+  )
+}
+`;
+}
+
+// src/generators/templates/views/overlaysView.ts
+function getOverlaysViewTemplate(isTs) {
+  return `import React from 'react'
+
+${isTs ? `export interface OverlaysViewProps {
+  onShowToast: (msg: string, type?: 'success' | 'error' | 'warning' | 'info') => void
+  onOpenBottomSheet: () => void
+  onOpenAlert: () => void
+}` : ""}
+
+export default function OverlaysView({
+  onShowToast,
+  onOpenBottomSheet,
+  onOpenAlert,
+}${isTs ? ": OverlaysViewProps" : ""}) {
+  return (
+    <div className="space-y-5 animate-in fade-in duration-200">
+      <section className="space-y-2">
+        <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 px-1">
+          Toast Notification Triggers
+        </h3>
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={() => onShowToast('Success! Operation completed.', 'success')}
+            className="p-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl text-xs font-semibold shadow-md active:scale-95 text-center"
+          >
+            \u2713 Success Toast
+          </button>
+          <button
+            type="button"
+            onClick={() => onShowToast('Error! Connection failed.', 'error')}
+            className="p-3 bg-rose-600 hover:bg-rose-500 text-white rounded-2xl text-xs font-semibold shadow-md active:scale-95 text-center"
+          >
+            \u2715 Error Toast
+          </button>
+          <button
+            type="button"
+            onClick={() => onShowToast('Warning! Low battery detected.', 'warning')}
+            className="p-3 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-2xl text-xs font-semibold shadow-md active:scale-95 text-center"
+          >
+            \u26A0 Warning Toast
+          </button>
+          <button
+            type="button"
+            onClick={() => onShowToast('Info: New update available.', 'info')}
+            className="p-3 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl text-xs font-semibold shadow-md active:scale-95 text-center"
+          >
+            \u2139 Info Toast
+          </button>
+        </div>
+      </section>
+
+      <section className="space-y-2">
+        <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 px-1">
+          Modals & Sheets
+        </h3>
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={onOpenBottomSheet}
+            className="p-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl text-xs font-semibold shadow-md active:scale-95 text-center"
+          >
+            Open Sheet Modal
+          </button>
+          <button
+            type="button"
+            onClick={onOpenAlert}
+            className="p-3 bg-amber-600 hover:bg-amber-500 text-white rounded-2xl text-xs font-semibold shadow-md active:scale-95 text-center"
+          >
+            Open Alert Modal
+          </button>
+        </div>
+      </section>
+    </div>
+  )
+}
+`;
+}
+
+// src/generators/tailwindComponents.ts
+async function generateTailwindComponents(targetDir, options) {
+  const isTs = options.language === "ts";
+  const ext = isTs ? "tsx" : "jsx";
+  const indexExt = isTs ? "ts" : "js";
+  async function writeComponent(folderName, componentName, code) {
+    const componentDir = path4.join(targetDir, "src", "components", folderName);
+    await writeFile(path4.join(componentDir, `${componentName}.${ext}`), code);
+    await writeFile(
+      path4.join(componentDir, `index.${indexExt}`),
+      `export { default } from './${componentName}'
+`
+    );
+  }
+  async function writeView(folderName, viewName, code) {
+    const viewDir = path4.join(targetDir, "src", "views", folderName);
+    await writeFile(path4.join(viewDir, `${viewName}.${ext}`), code);
+    await writeFile(
+      path4.join(viewDir, `index.${indexExt}`),
+      `export { default } from './${viewName}'
+`
+    );
+  }
+  await writeComponent("appHeader", "AppHeader", getAppHeaderTemplate(isTs));
+  await writeComponent("tabBar", "TabBar", getTabBarTemplate(isTs));
+  await writeComponent("appSidebar", "AppSidebar", getAppSidebarTemplate(isTs));
+  await writeComponent("toast", "Toast", getToastTemplate(isTs));
+  await writeComponent("alertDialog", "AlertDialog", getAlertDialogTemplate(isTs));
+  await writeComponent("bottomSheet", "BottomSheet", getBottomSheetTemplate(isTs));
+  await writeComponent("loadingSpinner", "LoadingSpinner", getLoadingSpinnerTemplate(isTs));
+  await writeComponent("skeleton", "Skeleton", getSkeletonTemplate(isTs));
+  await writeComponent("segmentedControl", "SegmentedControl", getSegmentedControlTemplate(isTs));
+  await writeComponent("pullToRefresh", "PullToRefresh", getPullToRefreshTemplate(isTs));
+  await writeComponent("toggleSwitch", "ToggleSwitch", getToggleSwitchTemplate(isTs));
+  await writeComponent("badge", "Badge", getBadgeTemplate(isTs));
+  await writeView("homeView", "HomeView", getHomeViewTemplate(isTs));
+  await writeView("controlsView", "ControlsView", getControlsViewTemplate(isTs));
+  await writeView("overlaysView", "OverlaysView", getOverlaysViewTemplate(isTs));
+}
+
+// src/generators/templates/app.ts
+function getAppTemplate(options, isTs) {
+  return `import { useState, useEffect } from 'react'
+${options.android ? "import { Capacitor } from '@capacitor/core'" : ""}
+import AppHeader from './components/appHeader'
+import TabBar from './components/tabBar'
+import AppSidebar from './components/appSidebar'
+import Toast${isTs ? ", { ToastType }" : ""} from './components/toast'
+import AlertDialog from './components/alertDialog'
+import BottomSheet from './components/bottomSheet'
+import PullToRefresh from './components/pullToRefresh'
+import Badge from './components/badge'
+import HomeView from './views/homeView'
+import ControlsView from './views/controlsView'
+import OverlaysView from './views/overlaysView'
+
+function App() {
+  const [activeTab, setActiveTab] = useState${isTs ? "<string>" : ""}('home')
+  const [count, setCount] = useState${isTs ? "<number>" : ""}(0)
+  const [darkMode, setDarkMode] = useState${isTs ? "<boolean>" : ""}(true)
+  const [hapticsEnabled, setHapticsEnabled] = useState${isTs ? "<boolean>" : ""}(true)
+  const [isSidebarOpen, setIsSidebarOpen] = useState${isTs ? "<boolean>" : ""}(false)
+  const [isBottomSheetOpen, setIsBottomSheetOpen] = useState${isTs ? "<boolean>" : ""}(false)
+  const [isAlertOpen, setIsAlertOpen] = useState${isTs ? "<boolean>" : ""}(false)
+  const [toastMessage, setToastMessage] = useState${isTs ? "<{ text: string; type: ToastType } | null>" : ""}(null)
+  const [isLoadingAsync, setIsLoadingAsync] = useState${isTs ? "<boolean>" : ""}(false)
+
+  ${options.android ? `const platform = Capacitor.getPlatform()
+  const isNative = Capacitor.isNativePlatform()` : `const platform = 'web'
+  const isNative = false`}
+
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add('dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+    }
+  }, [darkMode])
+
+  const showToast = (text${isTs ? ": string" : ""}, type${isTs ? ": ToastType" : ""} = 'info') => {
+    setToastMessage({ text, type })
+  }
+
+  const handleRefresh = async () => {
+    setIsLoadingAsync(true)
+    await new Promise((resolve) => setTimeout(resolve, 1500))
+    setIsLoadingAsync(false)
+    showToast('Data refreshed successfully!', 'success')
+  }
+
+  const tabs = [
+    {
+      id: 'home',
+      label: 'Home',
+      icon: (
+        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l9-9 9 9M5 10v10a1 1 0 001 1h3a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1h3a1 1 0 001-1V10" />
+        </svg>
+      ),
+    },
+    {
+      id: 'controls',
+      label: 'Controls',
+      icon: (
+        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+        </svg>
+      ),
+      badge: 2,
+    },
+    {
+      id: 'overlays',
+      label: 'Overlays',
+      icon: (
+        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V6z" />
+        </svg>
+      ),
+    },
+  ]
+
+  const sidebarItems = [
+    { id: '1', label: 'Dashboard', icon: '\u{1F4CA}', onClick: () => setActiveTab('home') },
+    { id: '2', label: 'Component Suite', icon: '\u{1F9E9}', onClick: () => setActiveTab('controls') },
+    { id: '3', label: 'Modal Overlays', icon: '\u{1F4F1}', onClick: () => setActiveTab('overlays') },
+    { id: '4', label: 'Show Alert Dialog', icon: '\u26A0\uFE0F', onClick: () => setIsAlertOpen(true) },
+  ]
+
+  return (
+    <div className={\`min-h-screen transition-colors duration-200 \${
+      darkMode ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'
+    }\`}>
+      {toastMessage && (
+        <Toast
+          type={toastMessage.type}
+          message={toastMessage.text}
+          onClose={() => setToastMessage(null)}
+        />
+      )}
+
+      <AppSidebar
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+        title="CapKit Navigation"
+        items={sidebarItems}
+        darkMode={darkMode}
+      />
+
+      <AlertDialog
+        isOpen={isAlertOpen}
+        title="Reset State Counter?"
+        description="This will reset your current taps counter back to 0."
+        confirmText="Reset Now"
+        variant="danger"
+        onConfirm={() => {
+          setCount(0)
+          setIsAlertOpen(false)
+          showToast('Counter reset to 0', 'warning')
+        }}
+        onCancel={() => setIsAlertOpen(false)}
+        darkMode={darkMode}
+      />
+
+      <BottomSheet
+        isOpen={isBottomSheetOpen}
+        onClose={() => setIsBottomSheetOpen(false)}
+        title="CapKit Mobile Components"
+        darkMode={darkMode}
+      >
+        <div className="space-y-4 py-2">
+          <p className="text-xs text-slate-400">
+            This draggable bottom sheet provides native mobile drawer experiences for menus, filters, and forms.
+          </p>
+          <div className="flex gap-2 flex-wrap">
+            <Badge variant="primary">Header</Badge>
+            <Badge variant="success">TabBar</Badge>
+            <Badge variant="warning">Drawer</Badge>
+            <Badge variant="danger">AlertDialog</Badge>
+            <Badge variant="neutral">PullToRefresh</Badge>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setIsBottomSheetOpen(false)
+              showToast('Action confirmed from BottomSheet', 'success')
+            }}
+            className="w-full py-2.5 bg-blue-600 text-white rounded-xl text-xs font-semibold shadow-md active:scale-98"
+          >
+            Confirm & Close
+          </button>
+        </div>
+      </BottomSheet>
+
+      <AppHeader
+        title="${options.projectName}"
+        subtitle="Mobile Component Suite"
+        platform={platform}
+        isNative={isNative}
+        darkMode={darkMode}
+        onToggleTheme={() => setDarkMode(!darkMode)}
+        onOpenSidebar={() => setIsSidebarOpen(true)}
+      />
+
+      <PullToRefresh onRefresh={handleRefresh}>
+        <main className="max-w-md mx-auto px-4 pb-24 pt-4 space-y-5">
+          {activeTab === 'home' && (
+            <HomeView
+              count={count}
+              onIncrement={() => {
+                setCount((c) => c + 1)
+                if ((count + 1) % 5 === 0) showToast(\`Reached \${count + 1} taps! \u{1F389}\`, 'success')
+              }}
+              onReset={() => setIsAlertOpen(true)}
+              darkMode={darkMode}
+              onOpenBottomSheet={() => setIsBottomSheetOpen(true)}
+              onShowToast={showToast}
+              isLoadingAsync={isLoadingAsync}
+              onTriggerReload={handleRefresh}
+            />
+          )}
+
+          {activeTab === 'controls' && (
+            <ControlsView
+              darkMode={darkMode}
+              onToggleDarkMode={setDarkMode}
+              hapticsEnabled={hapticsEnabled}
+              onToggleHaptics={(val) => {
+                setHapticsEnabled(val)
+                showToast(val ? 'Haptics enabled' : 'Haptics disabled', 'info')
+              }}
+              onOpenBottomSheet={() => setIsBottomSheetOpen(true)}
+              onOpenAlert={() => setIsAlertOpen(true)}
+            />
+          )}
+
+          {activeTab === 'overlays' && (
+            <OverlaysView
+              onShowToast={showToast}
+              onOpenBottomSheet={() => setIsBottomSheetOpen(true)}
+              onOpenAlert={() => setIsAlertOpen(true)}
+            />
+          )}
+        </main>
+      </PullToRefresh>
+
+      <TabBar
+        tabs={tabs}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        darkMode={darkMode}
+      />
+    </div>
+  )
+}
+
+export default App
+`;
 }
 
 // src/generators/files.ts
@@ -1173,414 +1767,7 @@ export default App
 `;
   } else if (options.tailwind) {
     await generateTailwindComponents(targetDir, options);
-    appContent = `import { useState, useEffect } from 'react'
-${options.android ? "import { Capacitor } from '@capacitor/core'" : ""}
-import AppHeader from './components/appHeader'
-import TabBar from './components/tabBar'
-import AppSidebar from './components/appSidebar'
-import Toast${isTs ? ", { ToastType }" : ""} from './components/toast'
-import AlertDialog from './components/alertDialog'
-import BottomSheet from './components/bottomSheet'
-import LoadingSpinner from './components/loadingSpinner'
-import Skeleton from './components/skeleton'
-import SegmentedControl from './components/segmentedControl'
-import PullToRefresh from './components/pullToRefresh'
-import ToggleSwitch from './components/toggleSwitch'
-import Badge from './components/badge'
-
-function App() {
-  const [activeTab, setActiveTab] = useState${isTs ? "<string>" : ""}('home')
-  const [activeSegment, setActiveSegment] = useState${isTs ? "<string>" : ""}('overview')
-  const [count, setCount] = useState${isTs ? "<number>" : ""}(0)
-  const [darkMode, setDarkMode] = useState${isTs ? "<boolean>" : ""}(true)
-  const [hapticsEnabled, setHapticsEnabled] = useState${isTs ? "<boolean>" : ""}(true)
-  const [isSidebarOpen, setIsSidebarOpen] = useState${isTs ? "<boolean>" : ""}(false)
-  const [isBottomSheetOpen, setIsBottomSheetOpen] = useState${isTs ? "<boolean>" : ""}(false)
-  const [isAlertOpen, setIsAlertOpen] = useState${isTs ? "<boolean>" : ""}(false)
-  const [toastMessage, setToastMessage] = useState${isTs ? "<{ text: string; type: ToastType } | null>" : ""}(null)
-  const [isLoadingAsync, setIsLoadingAsync] = useState${isTs ? "<boolean>" : ""}(false)
-
-  ${options.android ? `const platform = Capacitor.getPlatform()
-  const isNative = Capacitor.isNativePlatform()` : `const platform = 'web'
-  const isNative = false`}
-
-  useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add('dark')
-    } else {
-      document.documentElement.classList.remove('dark')
-    }
-  }, [darkMode])
-
-  const showToast = (text${isTs ? ": string" : ""}, type${isTs ? ": ToastType" : ""} = 'info') => {
-    setToastMessage({ text, type })
-  }
-
-  const handleRefresh = async () => {
-    setIsLoadingAsync(true)
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-    setIsLoadingAsync(false)
-    showToast('Data refreshed successfully!', 'success')
-  }
-
-  const tabs = [
-    {
-      id: 'home',
-      label: 'Home',
-      icon: (
-        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l9-9 9 9M5 10v10a1 1 0 001 1h3a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1h3a1 1 0 001-1V10" />
-        </svg>
-      ),
-    },
-    {
-      id: 'controls',
-      label: 'Controls',
-      icon: (
-        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-        </svg>
-      ),
-      badge: 2,
-    },
-    {
-      id: 'overlays',
-      label: 'Overlays',
-      icon: (
-        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V6z" />
-        </svg>
-      ),
-    },
-  ]
-
-  const sidebarItems = [
-    { id: '1', label: 'Dashboard', icon: '\u{1F4CA}', onClick: () => setActiveTab('home') },
-    { id: '2', label: 'Component Suite', icon: '\u{1F9E9}', onClick: () => setActiveTab('controls') },
-    { id: '3', label: 'Modal Overlays', icon: '\u{1F4F1}', onClick: () => setActiveTab('overlays') },
-    { id: '4', label: 'Show Alert Dialog', icon: '\u26A0\uFE0F', onClick: () => setIsAlertOpen(true) },
-  ]
-
-  return (
-    <div className={\`min-h-screen transition-colors duration-200 \${
-      darkMode ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'
-    }\`}>
-      {/* Toast Notification */}
-      {toastMessage && (
-        <Toast
-          type={toastMessage.type}
-          message={toastMessage.text}
-          onClose={() => setToastMessage(null)}
-        />
-      )}
-
-      {/* Slide-out Navigation Drawer */}
-      <AppSidebar
-        isOpen={isSidebarOpen}
-        onClose={() => setIsSidebarOpen(false)}
-        title="CapKit Navigation"
-        items={sidebarItems}
-        darkMode={darkMode}
-      />
-
-      {/* Alert Dialog Popup */}
-      <AlertDialog
-        isOpen={isAlertOpen}
-        title="Reset State Counter?"
-        description="This will reset your current taps counter back to 0."
-        confirmText="Reset Now"
-        variant="danger"
-        onConfirm={() => {
-          setCount(0)
-          setIsAlertOpen(false)
-          showToast('Counter reset to 0', 'warning')
-        }}
-        onCancel={() => setIsAlertOpen(false)}
-        darkMode={darkMode}
-      />
-
-      {/* Draggable Bottom Sheet */}
-      <BottomSheet
-        isOpen={isBottomSheetOpen}
-        onClose={() => setIsBottomSheetOpen(false)}
-        title="CapKit Mobile Components"
-        darkMode={darkMode}
-      >
-        <div className="space-y-4 py-2">
-          <p className="text-xs text-slate-400">
-            This draggable bottom sheet provides native mobile drawer experiences for menus, filters, and forms.
-          </p>
-          <div className="flex gap-2 flex-wrap">
-            <Badge variant="primary">Header</Badge>
-            <Badge variant="success">TabBar</Badge>
-            <Badge variant="warning">Drawer</Badge>
-            <Badge variant="danger">AlertDialog</Badge>
-            <Badge variant="neutral">PullToRefresh</Badge>
-          </div>
-          <button
-            type="button"
-            onClick={() => {
-              setIsBottomSheetOpen(false)
-              showToast('Action confirmed from BottomSheet', 'success')
-            }}
-            className="w-full py-2.5 bg-blue-600 text-white rounded-xl text-xs font-semibold shadow-md active:scale-98"
-          >
-            Confirm & Close
-          </button>
-        </div>
-      </BottomSheet>
-
-      {/* Sticky App Header */}
-      <AppHeader
-        title="${options.projectName}"
-        subtitle="Mobile Component Suite"
-        platform={platform}
-        isNative={isNative}
-        darkMode={darkMode}
-        onToggleTheme={() => setDarkMode(!darkMode)}
-        onOpenSidebar={() => setIsSidebarOpen(true)}
-      />
-
-      {/* Main Tab Content with PullToRefresh */}
-      <PullToRefresh onRefresh={handleRefresh}>
-        <main className="max-w-md mx-auto px-4 pb-24 pt-4 space-y-5">
-          {activeTab === 'home' && (
-            <div className="space-y-5 animate-in fade-in duration-200">
-              {/* Hero Banner */}
-              <section className="text-center pt-2">
-                <div className="inline-flex items-center justify-center p-3.5 bg-gradient-to-tr from-cyan-500/20 to-blue-600/20 border border-cyan-500/30 rounded-2xl mb-3 shadow-lg">
-                  <svg className="w-10 h-10 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
-                    <rect width="14" height="20" x="5" y="2" rx="2" ry="2" />
-                    <path d="M12 18h.01" />
-                  </svg>
-                </div>
-                <h2 className="text-2xl font-bold tracking-tight">CapKit Mobile Starter</h2>
-                <div className="flex items-center justify-center gap-1.5 mt-2">
-                  <Badge variant="primary">React 19</Badge>
-                  <Badge variant="success">Capacitor 8</Badge>
-                  <Badge variant="warning">Tailwind v4</Badge>
-                </div>
-              </section>
-
-              {/* Segmented Control */}
-              <section>
-                <SegmentedControl
-                  options={[
-                    { value: 'overview', label: 'Overview' },
-                    { value: 'interactive', label: 'Counter' },
-                    { value: 'async', label: 'Async Demo' },
-                  ]}
-                  value={activeSegment}
-                  onChange={setActiveSegment}
-                  darkMode={darkMode}
-                />
-              </section>
-
-              {/* Segment 1: Overview */}
-              {activeSegment === 'overview' && (
-                <div className={\`p-4 rounded-2xl border transition-colors space-y-3 \${
-                  darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-sm'
-                }\`}>
-                  <h3 className="font-semibold text-sm">Reusable Mobile System</h3>
-                  <p className="text-xs text-slate-400 leading-relaxed">
-                    Every component is built modularly under <code className="text-cyan-400">src/components/</code> following clean project structure conventions.
-                  </p>
-                  <div className="grid grid-cols-2 gap-2 pt-1">
-                    <button
-                      type="button"
-                      onClick={() => setIsBottomSheetOpen(true)}
-                      className="p-2.5 bg-slate-800/80 hover:bg-slate-800 rounded-xl text-xs font-medium text-slate-200 border border-slate-700 text-center"
-                    >
-                      Open BottomSheet \u2197
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => showToast('Pull-to-refresh enabled on top!', 'info')}
-                      className="p-2.5 bg-slate-800/80 hover:bg-slate-800 rounded-xl text-xs font-medium text-slate-200 border border-slate-700 text-center"
-                    >
-                      Test Pull-to-Refresh
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* Segment 2: Interactive Counter */}
-              {activeSegment === 'interactive' && (
-                <div className={\`p-4 rounded-2xl border transition-colors flex items-center justify-between \${
-                  darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-sm'
-                }\`}>
-                  <div>
-                    <p className="font-semibold text-sm">State Counter</p>
-                    <p className="text-xs text-slate-400 mt-0.5">Taps: {count}</p>
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setCount((c) => c + 1)
-                        if (count + 1 % 5 === 0) showToast(\`Reached \${count + 1} taps! \u{1F389}\`, 'success')
-                      }}
-                      className="px-4 py-2 bg-blue-600 hover:bg-blue-500 active:scale-95 text-white text-xs font-semibold rounded-xl shadow-md transition-all"
-                    >
-                      Increment ({count})
-                    </button>
-                    {count > 0 && (
-                      <button
-                        type="button"
-                        onClick={() => setIsAlertOpen(true)}
-                        className="px-3 py-2 bg-rose-600/20 text-rose-400 border border-rose-500/30 text-xs font-semibold rounded-xl"
-                      >
-                        Reset
-                      </button>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Segment 3: Async & Skeletons */}
-              {activeSegment === 'async' && (
-                <div className={\`p-4 rounded-2xl border transition-colors space-y-3 \${
-                  darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-sm'
-                }\`}>
-                  <div className="flex items-center justify-between">
-                    <span className="font-semibold text-sm">Loading Skeletons Demo</span>
-                    <button
-                      type="button"
-                      onClick={handleRefresh}
-                      className="text-xs text-cyan-400 font-semibold"
-                    >
-                      {isLoadingAsync ? 'Loading\u2026' : 'Trigger Reload'}
-                    </button>
-                  </div>
-                  {isLoadingAsync ? (
-                    <div className="space-y-2 py-2">
-                      <LoadingSpinner size="md" label="Fetching live device state\u2026" />
-                      <Skeleton className="h-4 w-3/4" darkMode={darkMode} />
-                      <Skeleton className="h-4 w-full" darkMode={darkMode} />
-                      <Skeleton className="h-12 w-full" darkMode={darkMode} />
-                    </div>
-                  ) : (
-                    <p className="text-xs text-slate-400">
-                      Tap "Trigger Reload" or pull down the page to see the skeleton loader and spinner in action.
-                    </p>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Controls Tab */}
-          {activeTab === 'controls' && (
-            <div className="space-y-5 animate-in fade-in duration-200">
-              <section className="space-y-2">
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 px-1">
-                  Device & App Settings
-                </h3>
-                <div className={\`p-4 rounded-2xl border divide-y transition-colors \${
-                  darkMode
-                    ? 'bg-slate-900 border-slate-800 divide-slate-800/80'
-                    : 'bg-white border-slate-200 divide-slate-100 shadow-sm'
-                }\`}>
-                  <ToggleSwitch
-                    label="Dark Mode"
-                    description="Switch between dark and light themes"
-                    checked={darkMode}
-                    onChange={setDarkMode}
-                  />
-                  <div className="pt-2">
-                    <ToggleSwitch
-                      label="Haptics Vibration"
-                      description="Vibrate device on interactive feedback"
-                      checked={hapticsEnabled}
-                      onChange={(val) => {
-                        setHapticsEnabled(val)
-                        showToast(val ? 'Haptics enabled' : 'Haptics disabled', 'info')
-                      }}
-                    />
-                  </div>
-                </div>
-              </section>
-
-              <section className="space-y-2">
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 px-1">
-                  Modal & Sheet Triggers
-                </h3>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setIsBottomSheetOpen(true)}
-                    className="p-3 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl text-xs font-semibold shadow-md active:scale-95"
-                  >
-                    Open BottomSheet
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setIsAlertOpen(true)}
-                    className="p-3 bg-rose-600 hover:bg-rose-500 text-white rounded-2xl text-xs font-semibold shadow-md active:scale-95"
-                  >
-                    Show Alert Dialog
-                  </button>
-                </div>
-              </section>
-            </div>
-          )}
-
-          {/* Overlays Tab */}
-          {activeTab === 'overlays' && (
-            <div className="space-y-5 animate-in fade-in duration-200">
-              <section className="space-y-2">
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 px-1">
-                  Toast Notification Triggers
-                </h3>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => showToast('Success! Operation completed.', 'success')}
-                    className="p-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl text-xs font-semibold shadow-md active:scale-95"
-                  >
-                    \u2713 Success Toast
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => showToast('Error! Connection failed.', 'error')}
-                    className="p-3 bg-rose-600 hover:bg-rose-500 text-white rounded-2xl text-xs font-semibold shadow-md active:scale-95"
-                  >
-                    \u2715 Error Toast
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => showToast('Warning! Low battery detected.', 'warning')}
-                    className="p-3 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-2xl text-xs font-semibold shadow-md active:scale-95"
-                  >
-                    \u26A0 Warning Toast
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => showToast('Info: New update available.', 'info')}
-                    className="p-3 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl text-xs font-semibold shadow-md active:scale-95"
-                  >
-                    \u2139 Info Toast
-                  </button>
-                </div>
-              </section>
-            </div>
-          )}
-        </main>
-      </PullToRefresh>
-
-      {/* Sticky Bottom Tab Bar */}
-      <TabBar
-        tabs={tabs}
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-        darkMode={darkMode}
-      />
-    </div>
-  )
-}
-
-export default App
-`;
+    appContent = getAppTemplate(options, isTs);
   } else {
     appContent = `import { useState } from 'react'
 ${options.android ? "import { Capacitor } from '@capacitor/core'" : ""}
